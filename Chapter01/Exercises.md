@@ -1,14 +1,14 @@
 1. Verify on your system that the directories dot and dot-dot are not the same,
    except in the root directory.
 
-   Note that /, /., and /.. all have the same inode:
+   Note that `/`, `/.`, and `/..` all have the same inode:
 
        $ /bin/ls -ldi / /. /..
        2 drwxr-xr-x 21 root root 4096 Mar 30 22:43 /
        2 drwxr-xr-x 21 root root 4096 Mar 30 22:43 /.
        2 drwxr-xr-x 21 root root 4096 Mar 30 22:43 /..
 
-  But that in other directories, .. refers to the parent directory
+   But that in other directories, .. refers to the parent directory
 
        $ /bin/ls -ldi /etc/ /etc/. /etc/..
        471 drwxr-xr-x 59 root root 4096 Apr  3 22:12 /etc/
