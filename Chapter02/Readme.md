@@ -17,23 +17,23 @@
    |                | `/usr/include/bits/typesizes.h:#define __CLOCK_T_TYPE		__SYSCALL_SLONG_TYPE`
    |                | `/usr/include/bits/typesizes.h:# define __SYSCALL_SLONG_TYPE	__SLONGWORD_TYPE`
    |                | `/usr/include/bits/types.h:#define __SLONGWORD_TYPE	long int`
-   | -------------- | --------------------------------------------------------------------------------
+   |                |
    | `comp_t`       | `/usr/include/sys/acct.h:typedef uint16_t comp_t;`
    |                | `/usr/include/bits/stdint-uintn.h:typedef __uint16_t uint16_t;`
    |                | `/usr/include/bits/types.h:typedef unsigned short int __uint16_t;`
-   | -------------- | --------------------------------------------------------------------------------
+   |                |
    | `dev_t`        | `/usr/include/sys/types.h:typedef __dev_t dev_t;`
    |                | `/usr/include/bits/types.h:__STD_TYPE __DEV_T_TYPE __dev_t;`
    |                | `/usr/include/bits/typesizes.h:#define __DEV_T_TYPE		__UQUAD_TYPE`
    |                | `/usr/include/bits/types.h:# define __UQUAD_TYPE		unsigned long int`
-   | -------------- | --------------------------------------------------------------------------------
+   |                |
    | `fd_set`       | `/usr/include/sys/select.h:typedef struct { __fd_mask __fds_bits[__FD_SETSIZE / __NFDBITS]; } fd_set;`
    |                | `/usr/include/sys/select.h:typedef long int __fd_mask;`
 
 3. Update the program in Figure 2.17 to avoid the needless processing that
    occurs when sysconf returns `LONG_MAX` as the limit for `OPEN_MAX`.
 
-   ```c
+```c
 #include "apue.h"
 #include <errno.h>
 #include <limits.h>
