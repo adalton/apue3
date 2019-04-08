@@ -33,33 +33,42 @@
 3. Update the program in Figure 2.17 to avoid the needless processing that
    occurs when sysconf returns `LONG_MAX` as the limit for `OPEN_MAX`.
 
+   This modified version falls back to using the `getrlimit` system call to get
+   the `RLIMIT_NOFILE` resource limit if `sysconf` gets an indeterminate value.
+
 ```c
 #include "apue.h"
 #include <errno.h>
 #include <limits.h>
+#include <unistd.h>
+#include <sys/resource.h>
 
 #ifdef  OPEN_MAX
-static long openmax = OPEN_MAX;
+static const long DEFAULT_OPEN_MAX = OPEN_MAX;
 #else
-static long openmax = 0;
+static const long DEFAULT_OPEN_MAX = 0;
 #endif
-
-/*
- * If OPEN_MAX is indeterminate, this might be inadequate.
- */
-#define OPEN_MAX_GUESS  256
 
 long
 open_max(void)
 {
-    if (openmax == 0) {     /* first time through */
+    long openmax = DEFAULT_OPEN_MAX;
+
+    if (openmax == 0) {
         errno = 0;
         if ((openmax = sysconf(_SC_OPEN_MAX)) < 0) {
-            if (errno == 0)
-                openmax = OPEN_MAX_GUESS;   /* it’s indeterminate */
-            else
+            if (errno == 0) {
+                struct rlimit rlim = {};
+
+                if (getrlimit(RLIMIT_NOFILE, &rlim) == 0) {
+                    openmax = rlim.rlim_max;
+                } else {
+                    err_sys("getrlimit error for RLIMIT_NOFILE");
+                }
+            } else {
                 err_sys("sysconf error for _SC_OPEN_MAX");
         }
     }
     return(openmax);
-}```
+}
+```
