@@ -1,6 +1,15 @@
 1. When reading or writing a disk file, are the functions described in this
    chapter really unbuffered? Explain.
 
+   When we say *unbuffered* here, we mean "unbuffered in userspace".  The
+   data read/written here likely go through the kernel's buffer cache
+   When writing to a block device, the kernel will write an entire block.
+   A single `write()` might not write an entire block, and subsequent calls
+   to `write()` might need to write to the same block.  Rather than read the
+   block, update a part of it, and write it back for every call to `write`,
+   the kernel can cache the block in memory and flush (`sync`) it back to
+   disk later.
+
 2. Write your own `dup2` function that behaves the same way as the `dup2`
    function described in Section 3.12, without calling the `fcntl` function.
    Be sure to handle errors correctly.
