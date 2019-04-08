@@ -4,6 +4,13 @@
    in a program and because ISO C does not allow multiple typedefs for the same
    name, how must the headers be written?
 
+   Linux, with gcc-8.2.0 has `/usr/lib/gcc/x86_64-pc-linux-gnu/8.2.0/include/stddef.h`.
+   It uses the C preprocessor to determine whether or not the `size_t` type
+   has been defined, and if not, it defines it.  I'd guess that those macro
+   guards are well-known, and that any other files that might end up
+   defining it would check (and potentially set) them to prevent other files
+   from generating multiple definitions.
+
 2. Examine your system’s headers and list the actual data types used to
    implement the primitive system data types.
 
