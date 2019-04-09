@@ -1,18 +1,76 @@
 1. When reading or writing a disk file, are the functions described in this
    chapter really unbuffered? Explain.
 
-   When we say *unbuffered* here, we mean "unbuffered in userspace".  The
-   data read/written here likely go through the kernel's buffer cache
+   When we say *unbuffered* here, we mean "unbuffered in userspace" (to
+   minimize the system call overhead).  The data read/written here will
+   usually go through the kernel's buffer cache.
+   
    When writing to a block device, the kernel will write an entire block.
    A single `write()` might not write an entire block, and subsequent calls
    to `write()` might need to write to the same block.  Rather than read the
    block, update a part of it, and write it back for every call to `write`,
    the kernel can cache the block in memory and flush (`sync`) it back to
-   disk later.
+   disk later.  The same idea applies to reading data from blocks.
 
 2. Write your own `dup2` function that behaves the same way as the `dup2`
    function described in Section 3.12, without calling the `fcntl` function.
    Be sure to handle errors correctly.
+
+   Here's my function.  I use a stack to store file descriptors between
+   the current maximum and the target newfd.  See the full implementation
+   in `my_dup2.c`.
+
+```c
+/**
+ * Note: I don't know of a way to satisfy the atomic requirement in userspace,
+ *       so this implementation is subject to the race conditions mentioned
+ *       in the man page.
+ *
+ *       Also note that this will be subject to limits on the number of
+ *       open file descriptors.
+ */
+static int
+my_dup2(const int oldfd, const int newfd)
+{
+	if (newfd < 0 || newfd < 0) {
+		errno = EBADF;
+		return -1;
+	}
+
+	int fd = dup(oldfd);
+
+	if(fd < 0) {
+		errno = EBADF;
+		return -1;
+	}
+
+	// oldfd is valid
+	close(fd);
+
+	// Silently ignore EBADF
+	if (close(newfd) < 0 && errno != EBADF) {
+		return -1;
+	}
+
+	Stack* s = stack_new();
+
+	while((fd = dup(oldfd)) != newfd) {
+		stack_push(s, fd);
+	}
+
+	// Now newfd is a dup of oldfd, and the stack contains all the
+	// intermediate dups
+	while(stack_size(s) > 0) {
+		fd = stack_pop(s);
+		close(fd);
+	}
+
+	stack_destroy(s);
+	s = NULL;
+
+	return newfd;
+}
+```
 
 3. Assume that a process executes the following three function calls:
 ```c
