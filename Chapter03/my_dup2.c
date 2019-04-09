@@ -206,7 +206,7 @@ main(void)
 	// Try to replace TARGET_FD with /dev/zero
 	int fd3 = my_dup2(fd1, TARGET_FD);
 	if (fd3 < 0) {
-		perror("dup2");
+		perror("my_dup2");
 		return 1;
 	}
 
