@@ -122,7 +122,7 @@ my_dup2(const int oldfd, const int newfd)
 
 	int fd = dup(oldfd);
 
-	if(fd < 0) {
+	if (fd < 0) {
 		errno = EBADF;
 		return -1;
 	}
