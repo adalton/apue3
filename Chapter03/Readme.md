@@ -54,13 +54,13 @@ my_dup2(const int oldfd, const int newfd)
 
 	Stack* s = stack_new();
 
-	while((fd = dup(oldfd)) != newfd) {
+	while ((fd = dup(oldfd)) != newfd) {
 		stack_push(s, fd);
 	}
 
 	// Now newfd is a dup of oldfd, and the stack contains all the
 	// intermediate dups
-	while(stack_size(s) > 0) {
+	while (stack_size(s) > 0) {
 		fd = stack_pop(s);
 		close(fd);
 	}
