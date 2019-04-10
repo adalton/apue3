@@ -117,13 +117,13 @@ if (fd > 2)
 
 ```c
 dup2(fd, 0);   /* fd(1) and 0 are associated with the same file table entry */
-dup2(fd, 1);   /* does nothing since fd = 1*/
+dup2(fd, 1);   /* does nothing since fd = 1 */
 dup2(fd, 2);   /* fd(1), 0, and 2 are associated with the same file table entry */
 if (fd > 2)    /* fd(1) is not greater than 2 */
     close(fd); /* Not executed */
 ```
 
-    Now assume that `fd` is 3:
+Now assume that `fd` is 3:
 
 ```c
 dup2(fd, 0);   /* fd(3) and 0 are associated with the same file table entry */
