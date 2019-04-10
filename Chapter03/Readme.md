@@ -109,6 +109,30 @@ if (fd > 2)
    table entry with each call to `dup2`. Then assume that `fd` is 3 and draw
    the same picture.
 
+   I'm not drawing the picture for this one, but I will explore the two
+   cases.  This code segment is intended to make `stdin`, `stdout`, and
+   `stderr` to refer to the same file table entry.
+
+   Assume that `fd` is 1:
+
+```c
+dup2(fd, 0);   /* fd(1) and 0 are associated with the same file table entry */
+dup2(fd, 1);   /* does nothing since fd = 1*/
+dup2(fd, 2);   /* fd(1), 0, and 2 are associated with the same file table entry */
+if (fd > 2)    /* fd(1) is not greater than 2 */
+    close(fd); /* Not executed */
+```
+
+    Now assume that `fd` is 3:
+
+```c
+dup2(fd, 0);   /* fd(3) and 0 are associated with the same file table entry */
+dup2(fd, 1);   /* fd(3), 0, and 1 are associated with the same file table entry */
+dup2(fd, 2);   /* fd(3), 0, 1, and 2 are associated with the same file table entry */
+if (fd > 2)    /* fd(3) is greater than 2 */
+    close(fd); /* Now only 0, 1, and 2 are associated with the file table entry */
+```
+
 5. The Bourne shell, Bourne-again shell, and Korn shell notation
    `digit1>&digit2` says to redirect descriptor `digit1` to the same file as
    descriptor `digit2`. What is the difference between the two commands shown
