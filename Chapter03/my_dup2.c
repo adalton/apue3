@@ -120,6 +120,10 @@ my_dup2(const int oldfd, const int newfd)
 		return -1;
 	}
 
+	if (oldfd == newfd) {
+		return newfd;
+	}
+
 	int fd = dup(oldfd);
 
 	if (fd < 0) {
@@ -132,6 +136,7 @@ my_dup2(const int oldfd, const int newfd)
 
 	// Silently ignore EBADF
 	if (close(newfd) < 0 && errno != EBADF) {
+		// errno will be set by close
 		return -1;
 	}
 

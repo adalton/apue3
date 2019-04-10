@@ -37,6 +37,10 @@ my_dup2(const int oldfd, const int newfd)
 		return -1;
 	}
 
+	if (oldfd == newfd) {
+		return newfd;
+	}
+
 	int fd = dup(oldfd);
 
 	if (fd < 0) {
@@ -81,6 +85,16 @@ fd3 = open(path, oflags);
    Draw the resulting picture, similar to Figure 3.9. Which descriptors are
    affected by an `fcntl` on `fd1` with a command of `F_SETFD`? Which
    descriptors are affected by an `fcntl` on `fd1` with a command of `F_SETFL`?
+
+   See the file 3.3.pdf for the resulting picture.
+
+   A call to `fcntl` on `fd1` with a command of `F_SETFD` applies only to
+   `fd1`; the operation applies to the file descriptor and each file descriptor
+   has its own file descriptor flags.
+
+   A call to `fcntl` on `fd1` with a command of `F_SETFL` will affect all
+   three file descriptors; the operation applies to the file and all three
+   file descriptors are associated with the same file.
 
 4. The following sequence of code has been observed in various programs:
 ```c
