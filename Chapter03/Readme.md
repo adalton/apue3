@@ -121,6 +121,7 @@ dup2(fd, 1);   /* does nothing since fd = 1 */
 dup2(fd, 2);   /* fd(1), 0, and 2 are associated with the same file table entry */
 if (fd > 2)    /* fd(1) is not greater than 2 */
     close(fd); /* Not executed */
+/* Now only 0, 1, and 2 are associated with the file table entry */
 ```
 
 Now assume that `fd` is 3:
@@ -130,17 +131,33 @@ dup2(fd, 0);   /* fd(3) and 0 are associated with the same file table entry */
 dup2(fd, 1);   /* fd(3), 0, and 1 are associated with the same file table entry */
 dup2(fd, 2);   /* fd(3), 0, 1, and 2 are associated with the same file table entry */
 if (fd > 2)    /* fd(3) is greater than 2 */
-    close(fd); /* Now only 0, 1, and 2 are associated with the file table entry */
+    close(fd); /* fd(3) is now closed */
+/* Now only 0, 1, and 2 are associated with the file table entry */
 ```
+
+   In both cases, we're left with only file descriptors 0, 1, and 2 associated
+   with the file table entry.
 
 5. The Bourne shell, Bourne-again shell, and Korn shell notation
    `digit1>&digit2` says to redirect descriptor `digit1` to the same file as
    descriptor `digit2`. What is the difference between the two commands shown
    below? (Hint: The shells process their command lines from left to right.)
+
 ```bash
 ./a.out > outfile 2>&1
 ./a.out 2>&1 > outfile
 ```
+
+    The first redirects `stdout` (1) to `outfile`, then redirects `stderr` (2)
+    to a dup of 1; `stdout` and `stderr` are associated with a single file
+    table entry that references `outfile`.
+
+    The second redirects `stderr` (2) to whatever `stdout` is associated
+    with (likely, the terminal character device file -- the same file that
+    `stderr` would have been associated with by default), then redirects
+    `stdout` (1) to `outfile` (which doesn't affect `stderr` -- it's still
+    associated with the terminal's character device file..
+
 6. If you open a file for read–write with the append flag, can you still read
    from anywhere in the file using `lseek`? Can you use `lseek` to replace
    existing data in the file? Write a program to verify this.
