@@ -148,15 +148,15 @@ if (fd > 2)    /* fd(3) is greater than 2 */
 ./a.out 2>&1 > outfile
 ```
 
-    The first redirects `stdout` (1) to `outfile`, then redirects `stderr` (2)
-    to a dup of 1; `stdout` and `stderr` are associated with a single file
-    table entry that references `outfile`.
+The first redirects `stdout` (1) to `outfile`, then redirects `stderr` (2)
+to a dup of 1; `stdout` and `stderr` are associated with a single file
+table entry that references `outfile`.
 
-    The second redirects `stderr` (2) to whatever `stdout` is associated
-    with (likely, the terminal character device file -- the same file that
-    `stderr` would have been associated with by default), then redirects
-    `stdout` (1) to `outfile` (which doesn't affect `stderr` -- it's still
-    associated with the terminal's character device file..
+The second redirects `stderr` (2) to whatever `stdout` is associated
+with (likely, the terminal character device file -- the same file that
+`stderr` would have been associated with by default), then redirects
+`stdout` (1) to `outfile` (which doesn't affect `stderr` -- it's still
+associated with the terminal's character device file..
 
 6. If you open a file for read–write with the append flag, can you still read
    from anywhere in the file using `lseek`? Can you use `lseek` to replace
