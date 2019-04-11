@@ -11,17 +11,26 @@
    Newly created files and directories are created with mode 000:
 
 ```bash
-$ umask 777
-$ touch some_file
-$ mkdir some_directory
-$ ls
-total 4
-d--------- 2 user group 4096 Apr 10 22:23 some_directory
----------- 1 user group    0 Apr 10 22:23 some_file
+   $ umask 777
+   $ touch some_file
+   $ mkdir some_directory
+   $ ls
+   total 4
+   d--------- 2 user group 4096 Apr 10 22:23 some_directory
+   ---------- 1 user group    0 Apr 10 22:23 some_file
 ```
 
 3. Verify that turning off user-read permission for a file that you own denies
    your access to the file.
+
+```bash
+   $ echo hello > some_file
+   $ cat some_file
+   hello
+   $ chmod u-r some_file
+   $ cat some_file
+   cat: some_file: Permission denied
+```
 
 4. Run the program in Figure 4.9 after creating the files `foo` and `bar`.
    What happens?
