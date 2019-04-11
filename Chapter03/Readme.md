@@ -168,7 +168,10 @@ associated with the terminal's character device file.
 
    _Can you use `lseek` to replace existing data in the file?_
 
-   No.
+   No.  With only `O_APPEND`, the call to `write()` fails (see the example
+   program below).  If I modify the sample program to open the file With
+   `O_APPEND | O_RDWR`, then the `write()` is successful; it triggers a seek
+   to the end of the file before performing the write.
 
    _Write a program to verify this._
 
