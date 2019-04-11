@@ -8,15 +8,17 @@ int
 main(const int argc, const char *argv[])
 {
 	int i;
-	struct stat buf = {};
-	char *ptr;
 
 	for (i = 1; i < argc; i++) {
+		struct stat buf = {};
+		const char *ptr;
+
 		printf("%s: ", argv[i]);
 		if (stat(argv[i], &buf) < 0) {
 			perror("lstat error");
 			continue;
 		}
+
 		if (S_ISREG(buf.st_mode))
 			ptr = "regular";
 		else if (S_ISDIR(buf.st_mode))
@@ -33,6 +35,7 @@ main(const int argc, const char *argv[])
 			ptr = "socket";
 		else
 			ptr = "** unknown mode **";
+
 		printf("%s\n", ptr);
 	}
 
