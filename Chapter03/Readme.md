@@ -196,7 +196,7 @@ main(const int argc, const char* argv[])
 		return 1;
 	}
 
-	const int fd = open(argv[1], O_RDONLY | O_APPEND);
+	const int fd = open(argv[1], O_APPEND /* | O_RDWR */);
 	if (fd < 0) {
 		perror("open");
 		return 1;
