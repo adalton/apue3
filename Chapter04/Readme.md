@@ -74,4 +74,4 @@
     	err_sys(...);
 ```
 
-    What happens if path is `/dev/fd/1`?
+   What happens if path is `/dev/fd/1`?
