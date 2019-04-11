@@ -1,6 +1,10 @@
 1. Modify the program in Figure 4.3 to use `stat` instead of `lstat`. What
    changes if one of the command-line arguments is a symbolic link?
 
+   After changing `lstat` to `stat`, when the program encounters a symbolic
+   link, it reports the type of the file to which the link points instead
+   of the type of symbolic link.  See `exercise_1.c`.
+
 2. What happens if the file mode creation mask is set to 777 (octal)? Verify
    the results using your shell’s `umask` command.
 
