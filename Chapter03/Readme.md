@@ -156,8 +156,79 @@ The second redirects `stderr` (2) to whatever `stdout` is associated
 with (likely, the terminal character device file -- the same file that
 `stderr` would have been associated with by default), then redirects
 `stdout` (1) to `outfile` (which doesn't affect `stderr` -- it's still
-associated with the terminal's character device file..
+associated with the terminal's character device file.
 
 6. If you open a file for read–write with the append flag, can you still read
    from anywhere in the file using `lseek`? Can you use `lseek` to replace
    existing data in the file? Write a program to verify this.
+
+   _Can you still read from anywhere in the file using `lseek`?_
+
+   Yes.
+
+   _Can you use `lseek` to replace existing data in the file?_
+
+   No.
+
+   _Write a program to verify this._
+
+```c
+#include <fcntl.h>
+#include <stdio.h>
+#include <string.h>
+#include <unistd.h>
+#include <sys/stat.h>
+#include <sys/types.h>
+
+#define BUFFER_SIZE 1024
+
+int
+main(const int argc, const char* argv[])
+{
+	int exit_status = 1;
+
+	if (argc < 2) {
+		fprintf(stderr, "usage: %s <filename>\n", argv[0]);
+		return 1;
+	}
+
+	const int fd = open(argv[1], O_RDONLY | O_APPEND);
+	if (fd < 0) {
+		perror("open");
+		return 1;
+	}
+	char buffer[BUFFER_SIZE] = {};
+
+	if (lseek(fd, 0, SEEK_SET) < 0) {
+		perror("lseek");
+		goto done;
+	}
+
+	if (read(fd, buffer, sizeof(buffer) - 1) < 0) {
+		perror("read");
+		goto done;
+	}
+	printf("%s\n", buffer);
+
+	if (write(fd, "Five", strlen("Five")) < 0) {
+		perror("write");
+		goto done;
+	}
+
+	exit_status = 0;
+
+done:
+	close(fd);
+
+	return exit_status;
+}
+```
+
+    Sample run:
+
+      $ ./exercise_6 exercise_6.input
+      Four score and seven years ago our fathers brought fourth on this continent
+      a new nation, conceived in liberty and dedicated to the proposition that all
+      men are created equal.
+      
+      write: Bad file descriptor
