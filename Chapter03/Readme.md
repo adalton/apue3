@@ -173,6 +173,7 @@ associated with the terminal's character device file.
    _Write a program to verify this._
 
 ```c
+/* exercise_6.c */
 #include <fcntl.h>
 #include <stdio.h>
 #include <string.h>

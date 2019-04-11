@@ -1,8 +1,4 @@
-/*
- * 6. If you open a file for read–write with the append flag, can you still read
- *    from anywhere in the file using `lseek`? Can you use `lseek` to replace
- *    existing data in the file? Write a program to verify this.
- */
+/* exercise_6.c */
 #include <fcntl.h>
 #include <stdio.h>
 #include <string.h>
