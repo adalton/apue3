@@ -69,9 +69,9 @@
     already exists, ignoring the return code:
 
 ```c
-unlink(path);
-if ((fd = creat(path, FILE_MODE)) < 0)
-	err_sys(...);
+    unlink(path);
+    if ((fd = creat(path, FILE_MODE)) < 0)
+    	err_sys(...);
 ```
 
-What happens if path is `/dev/fd/1`?
+    What happens if path is `/dev/fd/1`?
