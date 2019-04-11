@@ -8,6 +8,18 @@
 2. What happens if the file mode creation mask is set to 777 (octal)? Verify
    the results using your shell’s `umask` command.
 
+   Newly created files and directories are created with mode 000:
+
+```bash
+$ umask 777
+$ touch some_file
+$ mkdir some_directory
+$ ls
+total 4
+d--------- 2 user group 4096 Apr 10 22:23 some_directory
+---------- 1 user group    0 Apr 10 22:23 some_file
+```
+
 3. Verify that turning off user-read permission for a file that you own denies
    your access to the file.
 
