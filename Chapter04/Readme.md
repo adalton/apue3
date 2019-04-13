@@ -57,6 +57,15 @@
    symbolic links. Should we ever see a file size of 0 for a directory or a
    symbolic link?
 
+   _Should we ever see a file size of 0 for a directory?_
+
+   No. A directory will always contain `.` and `..`.
+   
+   _Should we ever see a file size of 0 for a symbolic link?_
+
+   No. A symbolic link will always contain the path of the file to which
+   it references, and that will never be the empty string
+
 6. Write a utility like `cp(1)` that copies a file containing holes, without
    writing the bytes of 0 to the output file.
 
