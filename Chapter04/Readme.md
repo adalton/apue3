@@ -73,36 +73,36 @@
    with a couple of characters, 4GB of 0's, and a couple of characters at the
    end.
 
-     $ ls -lh sparse_file
-     -rw-r----- 1 user group 4.1G Apr 12 21:16 sparse_file
+      $ ls -lh sparse_file
+      -rw-r----- 1 user group 4.1G Apr 12 21:16 sparse_file
 
-     $ hexdump sparse_file
-     0000000 6968 0000 0000 0000 0000 0000 0000 0000
-     0000010 0000 0000 0000 0000 0000 0000 0000 0000
-     *
-     100000000 0000 6f68
-     100000004
+      $ hexdump sparse_file
+      0000000 6968 0000 0000 0000 0000 0000 0000 0000
+      0000010 0000 0000 0000 0000 0000 0000 0000 0000
+      *
+      100000000 0000 6f68
+      100000004
 
    Next, I run the the program in `exercise_6.c` to copy that file:
 
-     $ ./a.out sparse_file sparse_file_copy
-     $ ls -lh sparse_file*
-     -rw-r----- 1 user group 4.1G Apr 12 21:16 sparse_file
-     -rw-r----- 1 user group 4.1G Apr 12 21:34 sparse_file_copy
+      $ ./a.out sparse_file sparse_file_copy
+      $ ls -lh sparse_file*
+      -rw-r----- 1 user group 4.1G Apr 12 21:16 sparse_file
+      -rw-r----- 1 user group 4.1G Apr 12 21:34 sparse_file_copy
 
    I verify that the copy is sparse:
 
-     $ hexdump sparse_file_copy
-     0000000 6968 0000 0000 0000 0000 0000 0000 0000
-     0000010 0000 0000 0000 0000 0000 0000 0000 0000
-     *
-     100000000 0000 6f68
-     100000004
+      $ hexdump sparse_file_copy
+      0000000 6968 0000 0000 0000 0000 0000 0000 0000
+      0000010 0000 0000 0000 0000 0000 0000 0000 0000
+      *
+      100000000 0000 6f68
+      100000004
 
    And I verify that the files are the same:
 
-     $ diff sparse_file sparse_file_copy
-     $
+      $ diff sparse_file sparse_file_copy
+      $
 
 7. Note in the output from the `ls` command in Section 4.12 that the files
    `core` and `core.copy` have different access permissions. If the umask
