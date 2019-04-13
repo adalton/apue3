@@ -116,6 +116,12 @@ And I verify that the files are the same:
    `core` and `core.copy` have different access permissions. If the umask
    value didn’t change between the creation of the two files, explain how the
    difference could have occurred.
+
+   When a core dump occurs, the kernel writes the core file, not the process.
+   The kernel may not respect the process' umask when writing the core file.
+   The copy was created by a userspace process, and hence, respected the
+   umask.
+
 8. When running the program in Figure 4.16, we check the available disk space
    with the `df(1)` command. Why didn’t we use the `du(1)` command?
 
