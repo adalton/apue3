@@ -35,6 +35,23 @@
 4. Run the program in Figure 4.9 after creating the files `foo` and `bar`.
    What happens?
 
+   I created two non-empty files, then ran the program from Figure 4.9.
+   None of the system calls failed.  The permissions of the existing files
+   were not modified, but the files were truncated.
+
+```bash
+   $ echo foo > foo
+   $ echo bar > bar
+   $ ls -l foo bar
+   -rw-r----- 1 user group 4 Apr 12 20:05 bar
+   -rw-r----- 1 user group 4 Apr 12 20:05 foo
+   $ ./a.out
+   $ ls -l foo bar
+   -rw-r----- 1 user group 0 Apr 12 20:05 bar
+   -rw-r----- 1 user group 0 Apr 12 20:05 foo
+   $
+```
+
 5. In Section 4.12, we said that a file size of 0 is valid for a regular file.
    We also said that the `st_size` field is defined for directories and
    symbolic links. Should we ever see a file size of 0 for a directory or a
