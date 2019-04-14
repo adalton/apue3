@@ -215,6 +215,12 @@ Consider the following:
 
 13. How can you set only one of the two time values with the `utimes` function?
 
+    The `utimes` system call updates both the access and modification times
+    of the given file.  There is no direct way to modify only one of those
+    values with `utimes`.  To simulate changing only one value, you could
+    first determine the existing value using the `stat` system call, and
+    then specify the same time value in the call to `utimes`.
+
 14. Some versions of the `finger(1)` command output "New mail received ..."
     and "unread since ..." where ... are the corresponding times and dates.
     How can the program determine these two times and dates?
