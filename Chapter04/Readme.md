@@ -198,6 +198,17 @@ Consider the following:
     function. Look up the description for this function in your manuals.
     When might this function be useful?
 
+    The `chroot` function is useful in a number of scenarios, I'll describe
+    one.  The system call is useful in system recovery scenarios.  Consider
+    a secnario where a Linux machine will not boot, perhaps because of some
+    previous misconfiguration.  A person can boot the machine off of some
+    external bootable media (e.g., DVD, USB) and get a root shell.  The person
+    can then mount the "real" root partition of the machine (as well as any
+    other needed mount points) and then use the `chroot` command --- which
+    uses the `chroot` system call --- to get a shell with the root directory
+    referring to the "real" root of the machine.  The use can then issue
+    commands installed on the machine to repair the machine's configuraiton.
+
 13. How can you set only one of the two time values with the `utimes` function?
 
 14. Some versions of the `finger(1)` command output "New mail received ..."
