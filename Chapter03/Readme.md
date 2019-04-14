@@ -234,9 +234,12 @@
 
    Sample run:
 
-    $ ./exercise_6 exercise_6.input
-    Four score and seven years ago our fathers brought fourth on this continent
-    a new nation, conceived in liberty and dedicated to the proposition that all
-    men are created equal.
+   ```
+   $ ./exercise_6 exercise_6.input
+   Four score and seven years ago our fathers brought fourth on this continent
+   a new nation, conceived in liberty and dedicated to the proposition that all
+   men are created equal.
     
-    write: Bad file descriptor
+   write: Bad file descriptor
+   ```
+
