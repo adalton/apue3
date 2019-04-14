@@ -85,7 +85,7 @@
    100000004
    ```
 
-Next, I run the the program in `exercise_6.c` to copy that file:
+   Next, I run the the program in `exercise_6.c` to copy that file:
 
    ```
    $ ./a.out sparse_file sparse_file_copy
@@ -94,7 +94,7 @@ Next, I run the the program in `exercise_6.c` to copy that file:
    -rw-r----- 1 user group 4.1G Apr 12 21:34 sparse_file_copy
    ```
 
-I verify that the copy is sparse:
+   I verify that the copy is sparse:
 
    ```
    $ hexdump sparse_file_copy
@@ -105,7 +105,7 @@ I verify that the copy is sparse:
    100000004
    ```
 
-And I verify that the files are the same:
+   And I verify that the files are the same:
 
    ```
    $ diff sparse_file sparse_file_copy
