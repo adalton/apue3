@@ -231,6 +231,11 @@ Consider the following:
     and "unread since ..." where ... are the corresponding times and dates.
     How can the program determine these two times and dates?
 
+    The `finger(1)` program can `stat` the mail spool file for the user.
+    If the user has new mail, then the modification time will be more recent
+    than the access time.  The access time will reflect the last time that
+    the user read his or her mail.
+
 15. Examine the archive formats used by the `cpio(1)` and `tar(1)` commands.
     (These descriptions are usually found in Section 5 of the UNIX Programmer’s
     Manual.) How many of the three possible time values are saved for each
