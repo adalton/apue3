@@ -242,6 +242,19 @@ Consider the following:
     file? When a file is restored, what value do you think the access time
     is set to, and why?
 
+    _How many of the three possible time values are saved for each file?_
+
+    Only the modification time.  The access time would be modified by the
+    process creating the archive, so the value wouldn't be very meanful.
+    
+    _When a file is restored, what value do you think the access time is set
+    to, and why?_
+
+    Both the access and change times are set to the time at which the file
+    was re-created by extracting the archive.  Since these times are not
+    stored in the archive, the current time would be the default assigned
+    to them when the file is created.
+
 16. Does the UNIX System have a fundamental limitation on the depth of a
     directory tree? To find out, write a program that creates a directory and
     then changes to that directory, in a loop. Make certain that the length of
@@ -249,6 +262,24 @@ Consider the following:
     system’s `PATH_MAX` limit. Can you call `getcwd` to fetch the directory’s
     pathname? How do the standard UNIX System tools deal with this long
     pathname? Can you archive the directory using either `tar` or `cpio`?
+
+    _Does the UNIX System have a fundamental limitation on the depth of a
+    directory tree?_
+
+    No, the directory abstraction does not place any limit on the depth of
+    a directory tree.
+
+    Can you call `getcwd` to fetch the directory’s pathname?
+
+    No, `getcwd` fails if the pathname exceeds `PATH_MAX`
+    
+    _How do the standard UNIX System tools deal with this long pathname?
+    Can you archive the directory using either `tar` or `cpio`?_
+
+    Tools that depend on the path fail because the path is too long.  In
+    general, these applications need to allocate memory buffers to store
+    paths, and they don't want to make that allocation complex by dynamically
+    handling large paths.
 
 17. In Section 3.16, we described the `/dev/fd` feature. For any user to be
     able to access these files, their permissions must be `rw-rw-rw-`. Some
