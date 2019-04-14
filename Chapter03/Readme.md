@@ -20,68 +20,70 @@
    the current maximum and the target newfd.  See the full implementation
    in `my_dup2.c`.
 
-```c
-/**
- * Note: I don't know of a way to satisfy the atomic requirement in userspace,
- *       so this implementation is subject to the race conditions mentioned
- *       in the man page.
- *
- *       Also note that this will be subject to limits on the number of
- *       open file descriptors.
- */
-static int
-my_dup2(const int oldfd, const int newfd)
-{
-	if (newfd < 0 || newfd < 0) {
-		errno = EBADF;
-		return -1;
-	}
-
-	if (oldfd == newfd) {
-		return newfd;
-	}
-
-	int fd = dup(oldfd);
-
-	if (fd < 0) {
-		errno = EBADF;
-		return -1;
-	}
-
-	// oldfd is valid
-	close(fd);
-
-	// Silently ignore EBADF
-	if (close(newfd) < 0 && errno != EBADF) {
-		return -1;
-	}
-
-	Stack* s = stack_new();
-
-	while ((fd = dup(oldfd)) != newfd) {
-		stack_push(s, fd);
-	}
-
-	// Now newfd is a dup of oldfd, and the stack contains all the
-	// intermediate dups
-	while (stack_size(s) > 0) {
-		fd = stack_pop(s);
-		close(fd);
-	}
-
-	stack_destroy(s);
-	s = NULL;
-
-	return newfd;
-}
-```
+   ```c
+   /**
+    * Note: I don't know of a way to satisfy the atomic requirement in userspace,
+    *       so this implementation is subject to the race conditions mentioned
+    *       in the man page.
+    *
+    *       Also note that this will be subject to limits on the number of
+    *       open file descriptors.
+    */
+   static int
+   my_dup2(const int oldfd, const int newfd)
+   {
+   	if (newfd < 0 || newfd < 0) {
+   		errno = EBADF;
+   		return -1;
+   	}
+   
+   	if (oldfd == newfd) {
+   		return newfd;
+   	}
+   
+   	int fd = dup(oldfd);
+   
+   	if (fd < 0) {
+   		errno = EBADF;
+   		return -1;
+   	}
+   
+   	// oldfd is valid
+   	close(fd);
+   
+   	// Silently ignore EBADF
+   	if (close(newfd) < 0 && errno != EBADF) {
+   		return -1;
+   	}
+   
+   	Stack* s = stack_new();
+   
+   	while ((fd = dup(oldfd)) != newfd) {
+   		stack_push(s, fd);
+   	}
+   
+   	// Now newfd is a dup of oldfd, and the stack contains all the
+   	// intermediate dups
+   	while (stack_size(s) > 0) {
+   		fd = stack_pop(s);
+   		close(fd);
+   	}
+   
+   	stack_destroy(s);
+   	s = NULL;
+   
+   	return newfd;
+   }
+   ```
 
 3. Assume that a process executes the following three function calls:
-```c
-fd1 = open(path, oflags);
-fd2 = dup(fd1);
-fd3 = open(path, oflags);
-```
+
+   ```c
+   fd1 = open(path, oflags);
+   fd2 = dup(fd1);
+   fd3 = open(path, oflags);
+   ```
+
    Draw the resulting picture, similar to Figure 3.9. Which descriptors are
    affected by an `fcntl` on `fd1` with a command of `F_SETFD`? Which
    descriptors are affected by an `fcntl` on `fd1` with a command of `F_SETFL`?
@@ -97,13 +99,15 @@ fd3 = open(path, oflags);
    file descriptors are associated with the same file.
 
 4. The following sequence of code has been observed in various programs:
-```c
-dup2(fd, 0);
-dup2(fd, 1);
-dup2(fd, 2);
-if (fd > 2)
-    close(fd);
-```
+
+   ```c
+   dup2(fd, 0);
+   dup2(fd, 1);
+   dup2(fd, 2);
+   if (fd > 2)
+       close(fd);
+   ```
+
    To see why the if test is needed, assume that `fd` is 1 and draw a picture
    of what happens to the three descriptor entries and the corresponding file
    table entry with each call to `dup2`. Then assume that `fd` is 3 and draw
@@ -115,25 +119,25 @@ if (fd > 2)
 
    Assume that `fd` is 1:
 
-```c
-dup2(fd, 0);   /* fd(1) and 0 are associated with the same file table entry */
-dup2(fd, 1);   /* does nothing since fd = 1 */
-dup2(fd, 2);   /* fd(1), 0, and 2 are associated with the same file table entry */
-if (fd > 2)    /* fd(1) is not greater than 2 */
-    close(fd); /* Not executed */
-/* Now only 0, 1, and 2 are associated with the file table entry */
-```
-
-Now assume that `fd` is 3:
-
-```c
-dup2(fd, 0);   /* fd(3) and 0 are associated with the same file table entry */
-dup2(fd, 1);   /* fd(3), 0, and 1 are associated with the same file table entry */
-dup2(fd, 2);   /* fd(3), 0, 1, and 2 are associated with the same file table entry */
-if (fd > 2)    /* fd(3) is greater than 2 */
-    close(fd); /* fd(3) is now closed */
-/* Now only 0, 1, and 2 are associated with the file table entry */
-```
+   ```c
+   dup2(fd, 0);   /* fd(1) and 0 are associated with the same file table entry */
+   dup2(fd, 1);   /* does nothing since fd = 1 */
+   dup2(fd, 2);   /* fd(1), 0, and 2 are associated with the same file table entry */
+   if (fd > 2)    /* fd(1) is not greater than 2 */
+       close(fd); /* Not executed */
+   /* Now only 0, 1, and 2 are associated with the file table entry */
+   ```
+   
+   Now assume that `fd` is 3:
+   
+   ```c
+   dup2(fd, 0);   /* fd(3) and 0 are associated with the same file table entry */
+   dup2(fd, 1);   /* fd(3), 0, and 1 are associated with the same file table entry */
+   dup2(fd, 2);   /* fd(3), 0, 1, and 2 are associated with the same file table entry */
+   if (fd > 2)    /* fd(3) is greater than 2 */
+       close(fd); /* fd(3) is now closed */
+   /* Now only 0, 1, and 2 are associated with the file table entry */
+   ```
 
    In both cases, we're left with only file descriptors 0, 1, and 2 associated
    with the file table entry.
@@ -143,20 +147,20 @@ if (fd > 2)    /* fd(3) is greater than 2 */
    descriptor `digit2`. What is the difference between the two commands shown
    below? (Hint: The shells process their command lines from left to right.)
 
-```bash
-./a.out > outfile 2>&1
-./a.out 2>&1 > outfile
-```
-
-The first redirects `stdout` (1) to `outfile`, then redirects `stderr` (2)
-to a dup of 1; `stdout` and `stderr` are associated with a single file
-table entry that references `outfile`.
-
-The second redirects `stderr` (2) to whatever `stdout` is associated
-with (likely, the terminal character device file -- the same file that
-`stderr` would have been associated with by default), then redirects
-`stdout` (1) to `outfile` (which doesn't affect `stderr` -- it's still
-associated with the terminal's character device file.
+   ```bash
+   ./a.out > outfile 2>&1
+   ./a.out 2>&1 > outfile
+   ```
+   
+   The first redirects `stdout` (1) to `outfile`, then redirects `stderr` (2)
+   to a dup of 1; `stdout` and `stderr` are associated with a single file
+   table entry that references `outfile`.
+   
+   The second redirects `stderr` (2) to whatever `stdout` is associated
+   with (likely, the terminal character device file -- the same file that
+   `stderr` would have been associated with by default), then redirects
+   `stdout` (1) to `outfile` (which doesn't affect `stderr` -- it's still
+   associated with the terminal's character device file.
 
 6. If you open a file for read–write with the append flag, can you still read
    from anywhere in the file using `lseek`? Can you use `lseek` to replace
@@ -175,60 +179,60 @@ associated with the terminal's character device file.
 
    _Write a program to verify this._
 
-```c
-/* exercise_6.c */
-#include <fcntl.h>
-#include <stdio.h>
-#include <string.h>
-#include <unistd.h>
-#include <sys/stat.h>
-#include <sys/types.h>
+   ```c
+   /* exercise_6.c */
+   #include <fcntl.h>
+   #include <stdio.h>
+   #include <string.h>
+   #include <unistd.h>
+   #include <sys/stat.h>
+   #include <sys/types.h>
+   
+   #define BUFFER_SIZE 1024
+   
+   int
+   main(const int argc, const char* argv[])
+   {
+   	int exit_status = 1;
+   
+   	if (argc < 2) {
+   		fprintf(stderr, "usage: %s <filename>\n", argv[0]);
+   		return 1;
+   	}
+   
+   	const int fd = open(argv[1], O_APPEND /* | O_RDWR */);
+   	if (fd < 0) {
+   		perror("open");
+   		return 1;
+   	}
+   	char buffer[BUFFER_SIZE] = {};
+   
+   	if (lseek(fd, 0, SEEK_SET) < 0) {
+   		perror("lseek");
+   		goto done;
+   	}
+   
+   	if (read(fd, buffer, sizeof(buffer) - 1) < 0) {
+   		perror("read");
+   		goto done;
+   	}
+   	printf("%s\n", buffer);
+   
+   	if (write(fd, "Five", strlen("Five")) < 0) {
+   		perror("write");
+   		goto done;
+   	}
+   
+   	exit_status = 0;
+   
+   done:
+   	close(fd);
+   
+   	return exit_status;
+   }
+   ```
 
-#define BUFFER_SIZE 1024
-
-int
-main(const int argc, const char* argv[])
-{
-	int exit_status = 1;
-
-	if (argc < 2) {
-		fprintf(stderr, "usage: %s <filename>\n", argv[0]);
-		return 1;
-	}
-
-	const int fd = open(argv[1], O_APPEND /* | O_RDWR */);
-	if (fd < 0) {
-		perror("open");
-		return 1;
-	}
-	char buffer[BUFFER_SIZE] = {};
-
-	if (lseek(fd, 0, SEEK_SET) < 0) {
-		perror("lseek");
-		goto done;
-	}
-
-	if (read(fd, buffer, sizeof(buffer) - 1) < 0) {
-		perror("read");
-		goto done;
-	}
-	printf("%s\n", buffer);
-
-	if (write(fd, "Five", strlen("Five")) < 0) {
-		perror("write");
-		goto done;
-	}
-
-	exit_status = 0;
-
-done:
-	close(fd);
-
-	return exit_status;
-}
-```
-
-Sample run:
+   Sample run:
 
     $ ./exercise_6 exercise_6.input
     Four score and seven years ago our fathers brought fourth on this continent
