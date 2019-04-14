@@ -134,7 +134,7 @@ And I verify that the files are the same:
    filename entry in the directory.  In that case, `unlink` updates the
    changed-status time of the file to which the name referenced.
 
-   Consider the following:
+Consider the following:
 
    * Create a file
 
