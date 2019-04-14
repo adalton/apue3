@@ -267,19 +267,43 @@ Consider the following:
     directory tree?_
 
     No, the directory abstraction does not place any limit on the depth of
-    a directory tree.
+    a directory tree.  With the program in `exercise_16.c` I was able to
+    create a directory whose path length is greater than `PATH_MAX`:
 
-    Can you call `getcwd` to fetch the directory’s pathname?
+    ```
+    $ pwd | wc -c
+    8092
+    ```
 
-    No, `getcwd` fails if the pathname exceeds `PATH_MAX`
+    Note that I had to break it up with calls to `mkdir` and `chdir` with
+    relative paths. In an previous revision of this program, I tried to
+    use only `mkdir` with ever-increasing paths lengths, and that failed
+    once the path length exceeded `PATH_MAX`.
+
+    _Can you call `getcwd` to fetch the directory’s pathname?_
+
+    Yes, on Linux with glibc-2.28, `getcwd` is successful when the current
+    working directory is greater than `PATH_MAX` (as long as the given buffer
+    is large enough to hold the path).
     
     _How do the standard UNIX System tools deal with this long pathname?
     Can you archive the directory using either `tar` or `cpio`?_
 
-    Tools that depend on the path fail because the path is too long.  In
+    Some tools that depend on the path fail because the path is too long.  In
     general, these applications need to allocate memory buffers to store
     paths, and they don't want to make that allocation complex by dynamically
     handling large paths.
+
+    I can create an archive using `tar`, but I cannot extract that archive:
+
+    ```
+    Cannot mkdir: File name too long
+    tar: Exiting with failure status due to previous errors
+    ```
+
+    I was, however, able to use `rm -rf` and specifying the top-level directory
+    to remove them, so `rm` was able to deal with the path length greater
+    than `PATH_MAX`.
 
 17. In Section 3.16, we described the `/dev/fd` feature. For any user to be
     able to access these files, their permissions must be `rw-rw-rw-`. Some
