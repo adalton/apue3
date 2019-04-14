@@ -205,6 +205,8 @@
     entries in a directory have been processed, execute `chdir("..")`.
     Compare the time used by this version and the version in the text.
 
+    Note: I skipped this question
+
 12. Each process also has a root directory that is used for resolution of
     absolute pathnames. This root directory can be changed with the `chroot`
     function. Look up the description for this function in your manuals.
