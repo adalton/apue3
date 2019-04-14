@@ -130,18 +130,27 @@ And I verify that the files are the same:
 
    The `unlink` system call removes a link (a name to file mapping) from a
    file.  When there is only one link, the file is removed.  If there are
-   multiple links, then unlinking a name does not remove the file, on the
-   directory entry.  In that case, `unlink` updates the changed-status time
-   of the file to which the name referenced.
+   multiple links, then unlinking a name does not remove the file, only the
+   filename entry in the directory.  In that case, `unlink` updates the
+   changed-status time of the file to which the name referenced.
+
+   Consider the following:
+
+   * Create a file
 
 ```
-   # Create a file
    $ touch a
+```
 
-   # Create a second link to the same file
+   * Create a second link to the same file
+
+```
    $ ln a b
+```
 
-   # View the file status of the original file
+   *  View the file status of the original file
+
+```
    $ stat a
      File: a
      Size: 0         	Blocks: 0          IO Block: 4096   regular empty file
@@ -151,12 +160,18 @@ And I verify that the files are the same:
    Modify: 2019-04-13 21:47:51.295729076 -0400
    Change: 2019-04-13 21:47:54.049062408 -0400
     Birth: -
+```
 
-   # Remove the second link
+   * Remove the second link
+
+```
    $ rm b
+```
 
-   # Reexamine the file status of the original file.  Notice that the
-   # changed-status is updated.
+   * Reexamine the file status of the original file.  Notice that the
+     changed-status is updated.
+
+```
    $ stat a
      File: a
      Size: 0         	Blocks: 0          IO Block: 4096   regular empty file
