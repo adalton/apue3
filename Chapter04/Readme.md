@@ -128,7 +128,8 @@ And I verify that the files are the same:
    The `du(1)` command estimates disk usage by iterating over the contents
    of a given directory and collecting the size of each entry.  Since the
    program Figure 4.16 unlinked the file, the `du(1)` command would not find
-   it when it searched the directory.
+   it when it searched the directory (even during the period while the file
+   is open without a filename).
 
 9. In Figure 4.20, we show the `unlink` function as modifying the changed-status
    time of the file itself. How can this happen?
