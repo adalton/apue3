@@ -125,6 +125,11 @@ And I verify that the files are the same:
 8. When running the program in Figure 4.16, we check the available disk space
    with the `df(1)` command. Why didn’t we use the `du(1)` command?
 
+   The `du(1)` command estimates disk usage by iterating over the contents
+   of a given directory and collecting the size of each entry.  Since the
+   program Figure 4.16 unlinked the file, the `du(1)` command would not find
+   it when it searched the directory.
+
 9. In Figure 4.20, we show the `unlink` function as modifying the changed-status
    time of the file itself. How can this happen?
 
