@@ -192,6 +192,12 @@
 10. In Section 4.22, how does the system’s limit on the number of open files
     affect the `myftw` function?
 
+    The `myftw` function calls `dopath`.  The `dopath` function calls
+    `opendir`, which allocates a file descriptor.  With that file descriptor
+    open, `dopath` iterates over the contents of the directory, and
+    recursively calls itself for each directory that it finds.  As a result,
+    it can try to open as many file descriptors as the max path depth.
+
 11. In Section 4.22, our version of `ftw` never changes its directory. Modify
     this routine so that each time it encounters a directory, it uses the
     `chdir` function to change to that directory, allowing it to use the
