@@ -128,6 +128,46 @@ And I verify that the files are the same:
 9. In Figure 4.20, we show the `unlink` function as modifying the changed-status
    time of the file itself. How can this happen?
 
+   The `unlink` system call removes a link (a name to file mapping) from a
+   file.  When there is only one link, the file is removed.  If there are
+   multiple links, then unlinking a name does not remove the file, on the
+   directory entry.  In that case, `unlink` updates the changed-status time
+   of the file to which the name referenced.
+
+```
+   # Create a file
+   $ touch a
+
+   # Create a second link to the same file
+   $ ln a b
+
+   # View the file status of the original file
+   $ stat a
+     File: a
+     Size: 0         	Blocks: 0          IO Block: 4096   regular empty file
+   Device: 800h/2048d	Inode: 439741      Links: 2
+   Access: (0640/-rw-r-----)  Uid: ( 1000/ user)   Gid: ( 1000/ group)
+   Access: 2019-04-13 21:47:51.295729076 -0400
+   Modify: 2019-04-13 21:47:51.295729076 -0400
+   Change: 2019-04-13 21:47:54.049062408 -0400
+    Birth: -
+
+   # Remove the second link
+   $ rm b
+
+   # Reexamine the file status of the original file.  Notice that the
+   # changed-status is updated.
+   $ stat a
+     File: a
+     Size: 0         	Blocks: 0          IO Block: 4096   regular empty file
+   Device: 800h/2048d	Inode: 439741      Links: 1
+   Access: (0640/-rw-r-----)  Uid: ( 1000/ user)   Gid: ( 1000/ group)
+   Access: 2019-04-13 21:47:51.295729076 -0400
+   Modify: 2019-04-13 21:47:51.295729076 -0400
+   Change: 2019-04-13 21:48:00.462395742 -0400
+    Birth: -
+```
+
 10. In Section 4.22, how does the system’s limit on the number of open files
     affect the `myftw` function?
 
