@@ -317,3 +317,36 @@
     ```
 
     What happens if path is `/dev/fd/1`?
+
+    Note that in Linux `/dev/fd` is a symbolic link to `/proc/self/fd`, and
+    `/proc/self` is a symbol link to `/proc/<pid>/`, so we're really talking
+    about `/proc/<pid>/fd/1`.  That directory does not have write permission
+    for the user, and we cannot assign that permission:
+
+    ```
+    $ chmod u+w /proc/self/fd
+    chmod: changing permissions of '/proc/self/fd': Operation not permitted
+    ```
+
+    So, there is no way that the call to `unlink` will be successful (and
+    the code silently ignores that failure).
+
+    The target file is a symbol link to the file corresponding to the standard
+    output of the process.  If run from a shell, that'll be a character
+    device file corresponding to I/O device for the terminal session.  If
+    standard output redirection has occurred, then the link will point to
+    the target of that redirection.
+
+    We've previously seen that a call to `creat` for an existing file will
+    not fail or change the file's permissions, but will simply truncate
+    the file.  Truncating the character device file has no effect.  If
+    standard output has been redirected to a file, then that file will be
+    truncated.
+
+    ```
+    $ echo hi > out
+    $ ./a.out > out
+    unlink: Operation not permitted
+    $ cat out
+    $
+    ```
