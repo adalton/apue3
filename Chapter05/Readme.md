@@ -1,5 +1,11 @@
 1. Implement `setbuf` using `setvbuf`.
 
+   According to the man page for `setbuf`, it is equivalent to
+
+   ```c
+   setvbuf(stream, buf, buf ? _IOFBF : _IONBF, BUFSIZ);
+   ```
+
 2. Type in the program that copies a file using line-at-a-time I/O (`fgets`
    and `fputs`) from Figure 5.5, but use a `MAXLINE` of 4. What happens if you
    copy lines that exceed this length? Explain what is happening.
@@ -32,7 +38,7 @@
    by `getchar` will be sign-extened to match the number of bits in `EOF`.
    When `char` is unsigned, then the comparison will not terminate the loop;
    the return value of `getchar` will not be sign-extended, and the computer
-   will compare `0xFF` to -1.
+   will compare 256 to -1.
 
 5. How would you use the `fsync` function (Section 3.13) with a standard
    I/O stream?
