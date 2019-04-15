@@ -27,6 +27,10 @@
    The `printf` function returns the number of characters printed and -1 on
    error.  If `printf` returns 0, that means that it printed 0 characters.
 
+   ```c
+   printf("");
+   ```
+
 4. The following code works correctly on some machines, but not on others.
    What could be the problem?
 
