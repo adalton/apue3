@@ -6,6 +6,9 @@
 
 3. What does a return value of 0 from `printf` mean?
 
+   The `printf` function returns the number of characters printed and -1 on
+   error.  If `printf` returns 0, that means that it printed 0 characters.
+
 4. The following code works correctly on some machines, but not on others.
    What could be the problem?
 
@@ -21,6 +24,15 @@
            putchar(c);
    }
    ```
+
+   The `getchar` function returns an `int`, not a `char`.  The `EOF` constant
+   is -1.  There two cases to consider when `getchar` returns `EOF`: (1) when
+   `char` is signed, and (2) when `char` is unsigned.  When `char` is signed,
+   then the comparison will terminate the loop; the signed `char` returned
+   by `getchar` will be sign-extened to match the number of bits in `EOF`.
+   When `char` is unsigned, then the comparison will not terminate the loop;
+   the return value of `getchar` will not be sign-extended, and the computer
+   will compare `0xFF` to -1.
 
 5. How would you use the `fsync` function (Section 3.13) with a standard
    I/O stream?
