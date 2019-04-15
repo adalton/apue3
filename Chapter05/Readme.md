@@ -37,6 +37,14 @@
 5. How would you use the `fsync` function (Section 3.13) with a standard
    I/O stream?
 
+   Use the `fileno` function to get the file descriptor assocaited with
+   the stream.
+
+   '''c
+   fsync(fileno(stdout));
+   fsync(fileno(stderr));
+   '''
+
 6. In the programs in Figures 1.7 and 1.10, the prompt that is printed does
    not contain a newline, and we don’t call `fflush`. What causes the prompt
    to be output?
