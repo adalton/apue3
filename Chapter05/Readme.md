@@ -10,6 +10,18 @@
    and `fputs`) from Figure 5.5, but use a `MAXLINE` of 4. What happens if you
    copy lines that exceed this length? Explain what is happening.
 
+   To the user, the program exhibits the same behavior.
+
+   The `fgets` function will stop reading if (1) it has filled the buffer,
+   (2) it encounters a newline, or (3) it encounters EOF.  When `MAXLINE`
+   is 4, it will read a most 3 characters, leaving one for the `NUL` terminator.
+   For lines longer than 3 character, it will read/write 3 characters at a
+   time until it reads either a new-line or EOF, in which case it may read
+   fewer than 3 characters.
+
+   Although the program exhibits the same behavior, it does perform more
+   function calls than the version with a larger buffer.
+
 3. What does a return value of 0 from `printf` mean?
 
    The `printf` function returns the number of characters printed and -1 on
