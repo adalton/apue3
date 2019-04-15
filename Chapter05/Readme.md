@@ -40,14 +40,17 @@
    Use the `fileno` function to get the file descriptor assocaited with
    the stream.
 
-   '''c
+   ```c
    fsync(fileno(stdout));
    fsync(fileno(stderr));
-   '''
+   ```
 
 6. In the programs in Figures 1.7 and 1.10, the prompt that is printed does
    not contain a newline, and we don’t call `fflush`. What causes the prompt
    to be output?
+
+   A call to a FILE stream I/O API (like, in this case, `fgets`) will trigger
+   a flush.
 
 7. BSD-based systems provide a function called `funopen` that allows us to
    intercept `read`, `write`, `seek`, and `close` calls on a stream. Use this
