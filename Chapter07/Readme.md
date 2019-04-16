@@ -68,6 +68,9 @@
 7. In the output from the `size` command at the end of Section 7.6, why aren’t
    any sizes given for the heap and the stack?
 
+   The `size` command examines the binary; the heap and stack are runtime
+   constructs that vary as the program executes.
+
 8. In Section 7.7, the two file sizes (879443 and 8378) don't equal the sums
    of their respective text and data sizes. Why?
 
