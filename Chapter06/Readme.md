@@ -109,3 +109,61 @@
 5. Write a program to obtain the current time and print it using `strftime`,
    so that it looks like the default output from `date(1)`. Set the `TZ`
    environment variable to different values and see what happens.
+
+   ```c
+   #include <time.h>
+   #include <stdio.h>
+   
+   #define MAX_LINE 256
+   
+   int main(void)
+   {
+   	char date_string[MAX_LINE] = {};
+   
+   	const time_t current_time = time(NULL);
+   	if (current_time < 0) {
+   		perror("time");
+   		return 1;
+   	}
+   
+   	const struct tm* const tm = localtime(&current_time);
+   	if (tm == NULL) {
+   		perror("localtime");
+   		return 1;
+   	}
+   
+   	if (strftime(date_string, sizeof(date_string), "%a %b %d %X %Z %Y\n", tm) == 0) {
+   		fprintf(stderr, "strftime failed\n");
+   		return 1;
+   	}
+   
+   	printf("%s", date_string);
+   
+   	return 0;
+   } 
+   ```
+
+   Sample runs:
+
+   ```
+   $ TZ='' ./a.out
+   Tue Apr 16 01:54:34 UTC 2019
+
+   $ TZ=Egypt ./a.out
+   Tue Apr 16 03:55:08 EET 2019
+
+   $ TZ=EST5EDT ./a.out
+   Mon Apr 15 21:55:26 EDT 2019
+
+   $ TZ=US/Hawaii ./a.out
+   Mon Apr 15 15:55:56 HST 2019
+
+   $ TZ=US/Alaska ./a.out
+   Mon Apr 15 17:56:01 AKDT 2019
+
+   $ TZ=US/Pacific ./a.out
+   Mon Apr 15 18:56:11 PDT 2019
+
+   $ TZ=US/Eastern ./a.out
+   Mon Apr 15 21:56:16 EDT 2019
+   ```
