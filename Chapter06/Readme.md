@@ -78,6 +78,34 @@
 4. Calculate the latest time that can be represented by the `time_t` data type.
    After it wraps around, what happens?
 
+   On my system, `time_t` is defined as:
+
+   ```c
+   typedef long int __time_t;
+   typedef __time_t time_t;
+   ```
+
+   And the `sizeof(time_t)` is 8-bytes (64-bits).  Since `time_t` is signed,
+   that leaves us with 63-bits to work with.  2^63 = 9223372036854775807.
+
+         9223372036854775807 seconds  * (1 minute / 60 seconds)
+       =  153722867280912928 minutes  * (1 hours  / 60 minutes)
+       =    2562047788015215.5 hours  * (1 day    / 24 hours)
+       =     106751991167300.64 days  * (1 year   / 365.25 days)
+       =        292271023045.31 years
+
+       1970 + 292271023045 = 292,271,025,015
+
+   I tried to write a program (`exercise_4.c`) to test what would happen on
+   roll-over, but it failed after using 55 bits.  The maximum date I could
+   get `gmtime`/`asctime` to generate was:
+ 
+       $ ./a.out
+       Sun Jun 13 06:26:07 1141709097
+
+   Since I couldn't use all 64 bits, I couldn't see what would happen on
+   roll-over.
+
 5. Write a program to obtain the current time and print it using `strftime`,
    so that it looks like the default output from `date(1)`. Set the `TZ`
    environment variable to different values and see what happens.
