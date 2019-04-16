@@ -36,12 +36,34 @@
 4. Some UNIX system implementations purposely arrange that, when a program is
    executed, location 0 in the data segment is not accessible. Why?
 
+   If location 0 is accessible, when a pointer contains `NULL`, which is
+   almost always 0, then the program could dereference a `NULL` pointer and
+   get a valid value.
+
 5. Use the `typedef` facility of C to define a new data type `Exitfunc` for
    an exit handler. Redo the prototype for `atexit` using this data type.
+
+   ```c
+   typedef void (*Exitfunc)(void);
+
+   int atexit(Exitfunc function);
+
+   ```
 
 6. If we allocate an array of `long`s using `calloc`, is the array initialized
    to 0? If we allocate an array of pointers using `calloc`, is the array
    initialized to `null` pointers?
+
+   _If we allocate an array of `long`s using `calloc`, is the array initialized
+   to 0?_
+
+   Yes, `calloc` 0-fills the allocated memory.
+   
+   _If we allocate an array of pointers using `calloc`, is the array initialized
+   to `null` pointers?_
+
+   Yes (for systems where `NULL` = `(void*) 0`). `calloc` 0-fills the allocated
+   memory.
 
 7. In the output from the `size` command at the end of Section 7.6, why aren’t
    any sizes given for the heap and the stack?
