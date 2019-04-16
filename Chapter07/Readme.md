@@ -87,12 +87,17 @@
         int num = 0;
         int *ptr = &num;
 
-        if (val == 0) {
+        if (num == 0) { /* text had val == 0, but val is not in scope */
             int val;
 
             val = 5;
             ptr = &val;
         }
+
         return(*ptr + 1);
     }
     ```
+
+    This code is not correct.  The variable `val` is local to the `if` block.
+    The code save a pointer to that variable, and dereferences the pointer
+    outside of the `if` block, reading a variable that is no longer in scope.
