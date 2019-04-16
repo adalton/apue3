@@ -10,10 +10,15 @@
    what this question describes. Why? The return value of a function is
    stored in a register.  If that register isn't overwritten, then it will
    still contain the last value stored in it.  The call to `printf` returned
-   13 (here, I'm assuming there as also a newline), so that value was left
+   13 (here, I'm assuming there was also a newline), so that value was left
    in the return value register when `main` terminated.
 
 2. When is the output from the `printf`s in Figure 7.3 actually output?
+
+   Since they include newline characters, if the output is directed to a
+   terminal, it happens immediately.  If the output is directed to a file,
+   then then it happens when the `stdout` stream is flushed before program
+   termination.
 
 3. Is there any way for a function that is called by `main` to examine the
    command-line arguments without (a) passing `argc` and `argv` as arguments
