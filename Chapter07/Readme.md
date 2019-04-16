@@ -25,6 +25,14 @@
    from `main` to the function or (b) having `main` copy `argc` and `argv`
    into global variables?
 
+   In Linux, the program could read and parse `/proc/self/cmdline`, which
+   contains a `NUL` delimiated list of the `argv` values, terminated with
+   and additional `NUL` character.
+
+   ```
+   "some_command\0arg1\0arg2\0arg3\0\0"
+   ```
+
 4. Some UNIX system implementations purposely arrange that, when a program is
    executed, location 0 in the data segment is not accessible. Why?
 
