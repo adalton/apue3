@@ -1,6 +1,17 @@
 1. On an Intel x86 system under Linux, if we execute the program that prints
    "hello, world" and do not call `exit` or `return`, the termination status
-   of the program—which we can examine with the shell—is 13. Why?
+   of the program --- which we can examine with the shell --- is 13. Why?
+
+   I do not observe this behaior from a C program.  Now a days, if the
+   `return` statement is ommitted in `main`, then the compiler implicitly
+   adds a `return 0`.
+
+   If we wrote the program in assembly language, then the result would be
+   what this question describes. Why? The return value of a function is
+   stored in a register.  If that register isn't overwritten, then it will
+   still contain the last value stored in it.  The call to `printf` returned
+   13 (here, I'm assuming there as also a newline), so that value was left
+   in the return value register when `main` terminated.
 
 2. When is the output from the `printf`s in Figure 7.3 actually output?
 
