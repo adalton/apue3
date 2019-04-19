@@ -3,6 +3,24 @@
    -1.  Modify the program to check whether your implementation behaves this
    way. If it does not, how can you simulate this behavior?
 
+   My implementation does not behave that way; both `_exit(0)` and `exit(0)`
+   yield the same behavior.
+
+   We can simulate this behavior by explicitly closing `stdout` before
+   calling `_exit` (or `exit`).
+
+   ```c
+   fclose(stdout);
+   ```
+
+   See `exercise_1.c`; sample run:
+
+   ```
+   $ ./a.out
+   before vfork
+   $
+   ```
+
 2. Recall the typical arrangement of memory in Figure 7.6.  Because the stack
    frames corresponding to each function call are usually stored in the stack,
    and because after a `vfork` the child runs in the address space of the
