@@ -89,10 +89,13 @@
 
        1970 + 292271023045 = 292,271,025,015
 
-   Neither of these approaches are compatible with existing applications.  Using
-   unsigned 32-bit values instead of signed 32-bit values can cause problems
-   with existing applications does arithmetic on these numbers.  Extending it to
-   64-bit requires additional storage allocation by the applications.
+   Neither of these approaches are compatible with existing applications (at
+   least not without recompiling).  Using unsigned 32-bit values instead of
+   signed 32-bit values can cause problems with existing applications that
+   do arithmetic on these numbers and expect signed results.  Extending it to
+   64-bit requires additional storage allocation by the applications.  (If
+   the applications are using the proper type abstractions, then they may just
+   need to be recompiled).
 
 5. If the process time is stored as a signed 32-bit integer, and if the system
    counts 100 ticks per second, after how many days will the value overflow?
