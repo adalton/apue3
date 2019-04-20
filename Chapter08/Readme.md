@@ -145,6 +145,23 @@
    the output is not correct.  What's happening?  How can we correct this?
    Can this problem happen if we let the child write its output first?
 
+   _The output is not correct. What's happening?_
+
+   The first line of output is correct.  That's because the first instance
+   of `a.out`'s child is blocked waiting for the parent to finish.  At that
+   point, the parent signals the child and the parent terminates.
+
+   When the parent terminates, the shell starts the next instance of `a.out`,
+   which runs in parallel with the first instance's child -- both are writing
+   to standard output and their writes interleave.  That behaviour continues
+   with the next invocation of `a.out`.
+
+   _Can this problem happen if we let the child write its output first?_
+
+   No, if the child goes first, then `a.out` will not terminate until all of
+   its writing has finished.  This means that output from the following
+   invocations of `a.out` cannot interleave with earlier instances.
+
 5. In the program shown in Figure 8.20, we call `execl`, specifying the
    *pathname* of the interpreter file.  If we called `execlp` instead,
    specifying a *filename* of `testinterp`, and if the directory
