@@ -55,7 +55,7 @@
    	macro(SIGPWR) \
    	macro(SIGSYS)
    
-           /* I'll ignore real-time signals here for brevity */
+   	/* I'll ignore real-time signals here for brevity */
    
    /* Map signal number to signal name */
    #define SIGNAL_ARRAY(sig) [sig] = #sig,
@@ -99,6 +99,8 @@
    ```
 
 3. Draw pictures of the stack frames when we run the program from Figure 10.9.
+
+   See `10.3.pdf`.
 
 4. In Figure 10.11, we showed a technique that's often used to set a timeout
    on an I/O operation using `setjmp` and `longjmp`. The following code has
