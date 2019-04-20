@@ -211,6 +211,57 @@
 6. Write a program that creates a zombie, and then call `system` to execute
    the `ps(1)` command to verify that the process is a zombie.
 
+   Here's the program (also in `exercise_6.c`):
+
+   ```c
+   #include <stdio.h>
+   #include <stdlib.h>
+   #include <sys/types.h>
+   #include <sys/wait.h>
+   #include <unistd.h>
+   
+   int main(void)
+   {
+   	const pid_t pid = fork();
+   	if (pid < 0) {
+   		perror("fork");
+   		return 1;
+   	}
+   
+   	if (pid == 0) {
+   		// Child terminates
+   		return 0;
+   	}
+   
+   	// We could have registered for SIGCHLD and waited to receive that
+   	// signal, but for simplicity we'll just sleep "long enough" for
+   	// the child to start and terminate
+   	sleep(2);
+   
+   	char buffer[80];
+   	int status = 0;
+   
+   	snprintf(buffer, sizeof(buffer), "ps -p %d", pid);
+   	system(buffer);
+   
+   	// This will reap the zombie.  If we didn't do this, when the process
+   	// terminated, the zombie would get re-parented to `init`, and `init`
+   	// would reap it.
+   	wait(&status);
+   
+   	return 0;
+   }
+   ```
+
+   Here's a sample run of the program:
+   ```
+   $ ./a.out
+     PID TTY          TIME CMD
+    7531 pts/0    00:00:00 a.out <defunct>
+   ```
+
+   Here, the `<defunct>` indicates that the program is a zombie.
+
 7. We mentioned in Section 8.10 that POSIX.1 requires open directory streams
    to be closed across an `exec`.  Verify this as follows: call `opendir`
    for the root directory, peek at your system's implementation of the `DIR`
