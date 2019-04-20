@@ -1,5 +1,15 @@
 1. In Figure 10.2, remove the `for (;;)` statement. What happens and why?
 
+   The program pauses when `pause` is called.  If the program receives
+   either `SIGUSR1` or `SIGUSR2`, it will fire the signal handler
+   `sig_usr`. When the signal handler returns, `pause` returns and the
+   program terminates normally.
+
+   If the program receives any other signal, then the default signal
+   handler for that signal will fire. That signal handler may terminate
+   the program directly.  If not, again `pause` will return and the program
+   will return normally.
+
 2. Implement the `sig2str` function described in Section 10.22.
 
 3. Draw pictures of the stack frames when we run the program from Figure 10.9.
