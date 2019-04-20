@@ -29,10 +29,10 @@
    `const`, whereas the integer argument to `strerror` isn’t defined with this
    attribute. Why?
 
-   The `perrro` function takes a pointer to the first character in a string of
+   The `perror` function takes a pointer to the first character in a string of
    characters.  That pointer can point to a string literal:
 
-       perrror("foo");
+       perror("foo");
 
    In this context, it's important that `perror` *use* the value pointed to by
    the given argument but not *modify* the value.  Without the `const`
