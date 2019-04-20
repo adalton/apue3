@@ -73,7 +73,7 @@
    [24583] main: After bar()
    ```
 
-   One question that I alluded to aboveis, "How is the return address stored
+   One question that I alluded to above is, "How is the return address stored
    on the stack by `vfork` not corrupted by calls to other functions within
    the child?" This problem is not directly assocaited with the abuse of
    `vfork` in this context; this would be a problem even if the child directed
@@ -167,6 +167,46 @@
    specifying a *filename* of `testinterp`, and if the directory
    `/home/sar/bin/` was a path prefix, what would be printed as `argv[2]`
    when the program is run?
+
+   Consider the following program, which is similar to the one in Figure 8.20:
+
+   ```c
+   #include <stdio.h>
+   #include <unistd.h>
+   
+   int main(const int argc, char* const argv[])
+   {
+   	if (argc == 1) {
+   		execlp(argv[0], argv[0], "myarg1", "MY ARG2", NULL);
+   		perror("execlp");
+   		return 1;
+   	}
+   	int i;
+   
+   	for (i = 0; i < argc; ++i) {
+   		printf("argv[%d] = %s\n", i, argv[i]);
+   	}
+   
+   	return 0;
+   }
+   ```
+
+   If the program is run with no arguments, then it runs itself with arguments
+   similar to that of Figure 8.20.  This program produces the following
+   output (with the current directory in the `PATH`):
+
+   ```
+    $ a.out
+    argv[0] = a.out
+    argv[1] = myarg1
+    argv[2] = MY ARG2
+   ```
+
+   Note that `argv[2]` is still `"MY ARG2"`.  Some programs exhibit different
+   behavior based on the name of the command (i.e., `argv[0]`) that is used
+   to invoke them.  The `execlp` system all, like `execl`, enables the caller
+   to explicitly specify `argv[0]`; it does not explicilty use the executable
+   filename.
 
 6. Write a program that creates a zombie, and then call `system` to execute
    the `ps(1)` command to verify that the process is a zombie.
