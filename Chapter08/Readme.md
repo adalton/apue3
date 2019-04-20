@@ -104,8 +104,24 @@
    child terminates, so the return address is not lost.
 
 3. Rewrite the program in Figure 8.6 to use `waitid` instead of `wait`.  Instead
-   of calling `p4_exit`, determine the equivalent information from the
+   of calling `pr_exit`, determine the equivalent information from the
    `signinfo` structure.
+
+   See solution in file `exercise_3.c`:
+
+   Output of Figure 8.6:
+   ```
+   normal termination, exit status = 7
+   abnormal termination, signal number = 6
+   abnormal termination, signal number = 8
+   ```
+
+   Output of `exercise_3.c`:
+   ```
+   normal termination, exit status = 7
+   abnormal termination, signal number = 6
+   abnormal termination, signal number = 8
+   ```
 
 4. When we execute the program in Figure 8.13 one time, as in:
 
