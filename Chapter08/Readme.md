@@ -33,25 +33,27 @@
    `vfork` (a).
    
    The parent blocks at the call to `vfork` and the child continues execution
-   within the same address space.  The child then returns from `foo` (b).
+   within the same address space.  The child returns from `vfork`, then
+   returns from `foo` (b).
    
-   Next, `foo` calls baz.  The size of the `foo` and `baz` stack frames are
-   the same, so the `baz` stack frame directly overlays the location where
-   the `foo` stack frame was placed.  The variable `y` in `baz` is on the same
-   locaiton on the stack as `x` was in the call to `foo` (c).  `baz` then
-   calls `_exit`, terminating the child.
+   Next, `foo` calls `baz`. I wrote `baz` so that the size of its stack frame
+   would match that of `foo`; the activation record of `baz` directly overlays
+   the area of the stack that was used previously by `foo`.  The variable `y`
+   in `baz` is at the same locaiton on the stack as `x` was in the previous
+   activation of `foo` (c).  `baz` then calls `_exit`, terminating the child.
 
-   At that point, the parent continues execution.  The call to `vfork`
-   saved the address of the next instruction within its stack frame, and
-   no other function overwrote that location on the stack, so `vfork`
-   continued execution of `foo`.  Because the child's `baz` stack frame
-   overwrote `foo`, the value of `x` was overwritten with `baz`'s `y`.
+   At that point, the parent continues execution within the call to `vfork`.
+   `vfork` returns to the instruction within `foo` immediately after the
+   call to `vfork` (more on why that address didn't get lost when the child
+   called other functions below).  Because the child's `baz` stack frame
+   overwrote `foo`'s, the value of `x` was overwritten with `baz`'s `y`.
 
    Although not included in the figure, `foo` and `baz` also record the
-   address of the next instruction in `bar`.  The execution of `baz` in the
-   child overwrote that return address in the same way that it did `x`.
-   When the parent then returns from `foo`, it really returns from `baz`
-   `bar` then returns to `main`.
+   caller's return address at the same location in their stack frames, so the
+   child's call to `baz` overwrote the return address stored in the stack
+   frame of `foo`.  When the parent returns from `foo`, control jumps to
+   the instruction in `bar` after the call to `baz` (even though the parent
+   never called `baz`).  `bar` returns to `main`, and `main` returns.
 
    Here's a sample execution of the program:
 
@@ -70,6 +72,36 @@
    [24583] bar : After baz()           <- ... after call to baz (child overwrote return address)
    [24583] main: After bar()
    ```
+
+   One question that I alluded to aboveis, "How is the return address stored
+   on the stack by `vfork` not corrupted by calls to other functions within
+   the child?" This problem is not directly assocaited with the abuse of
+   `vfork` in this context; this would be a problem even if the child directed
+   called `_exit()` or some function in the `exec` family. 
+
+   I took a look at the implementation of the `vfork` function in glibc. I
+   noticed that its implementation explicitly copies the return address from
+   the stack into a register before invoking the system call.  After the
+   system call returns, the implementation rewrites the return address to the
+   stack before returning:
+
+   ```
+   ENTRY (__vfork)
+        /* Pop the return PC value into RDI.  We need a register that
+           is preserved by the syscall and that we're allowed to destroy. */
+        popq        %rdi
+        ...
+        /* Stuff the syscall number in RAX and enter into the kernel.  */
+        movl        $SYS_ify (vfork), %eax
+        syscall
+        ...
+        /* Push back the return PC.  */
+        pushq %rdi
+        ...
+   ```
+
+   The kernel saves the register state of the parent, and restores it once the
+   child terminates, so the return address is not lost.
 
 3. Rewrite the program in Figure 8.6 to use `waitid` instead of `wait`.  Instead
    of calling `p4_exit`, determine the equivalent information from the
