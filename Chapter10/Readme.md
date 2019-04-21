@@ -271,7 +271,7 @@
    		}
    	}
    
-	fclose(file);
+    fclose(file);
 
    	return 0;
    }
