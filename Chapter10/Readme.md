@@ -271,6 +271,8 @@
    		}
    	}
    
+	fclose(file);
+
    	return 0;
    }
    ```
