@@ -117,6 +117,15 @@
    ```
    What else is wrong with this sequence of code?
 
+   By calling `alarm` before calling `setjmp`, we risk having `sig_alarm` fire
+   before `setjmp` initializes `env_alarm`.  Consider a scenario where
+   after `alarm` completes but before `setjmp` is called the process recives
+   some other signal for which it has registered a signal handler.  If that
+   handler takes more than 60 seconds, the kernel will deliver a `SIGALRM`
+   signal to the process, and the process will execute `sig_alrm`.  The
+   `sig_alrm` function will try to `longjmp` to `env_alrm`, but it has not
+   yet been initialized.
+
 5. Using only a single timer (either alarm or the higher-precision `setitimer`),
    provide a set of functions that allows a process to set any number of timers.
 
