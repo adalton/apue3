@@ -308,6 +308,9 @@
    the disposition to its default and call kill the second time, instead of
    simply calling `_exit`?
 
+   If we called `_exit`, then the exit status of the process would not indicate
+   that the process was terminated because of a signal.
+
 8. Why do you think the `siginfo` structure (Section 10.14) includes the real
    user ID, instead of the effective user ID, in the `si_uid` field?
 
