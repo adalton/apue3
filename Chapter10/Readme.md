@@ -330,6 +330,12 @@
    once for every signal in the current signal mask (not once for every
    possible signal).
 
+   I do not see any way to iterate over the contents of a `sigset_t`, so I
+   cannot think of a way to loop once for each signal in the signal mask.
+
+   I have an implementation that loops over all signals in `exercise_9.c`,
+   that uses the function I developed for Exercise 2.
+
 10. Write a program that calls `sleep(60)` in an infinite loop. Every five
     times through the loop (every 5 minutes), fetch the current time of day
     and print the `tm_sec` field. Run the program overnight and explain the
