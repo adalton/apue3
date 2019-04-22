@@ -314,6 +314,17 @@
 8. Why do you think the `siginfo` structure (Section 10.14) includes the real
    user ID, instead of the effective user ID, in the `si_uid` field?
 
+   For the motivation behind this decision, consider the question "who can
+   send a signal to a process?"  The answer is generally "the owner of the
+   process" and "root".  Given this, if the field included the effective user
+   ID, then the only possible values would be the UID of the owner or
+   the UID of root (0).
+
+   By including the real user id, then the value can be the UID of the owner
+   or the UID of any user who can gain root privileges.  If there are
+   multiple such users, including the real user ID enables the program to
+   identify who really sent the signal.
+  
 9. Rewrite the function in Figure 10.14 to handle all the signals from
    Figure 10.1. The function should consist of a single loop that iterates
    once for every signal in the current signal mask (not once for every
