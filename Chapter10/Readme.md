@@ -573,8 +573,8 @@
     Mon Apr 22 22:41:36 EDT 2019
     ```
 
-    I notice that the "signal received" message is printed immediately before
-    the program terminates.  Using `sysdig`, I verified this:
+    On Linux I notice that the "signal received" message is printed immediately
+    before the program terminates.  Using `sysdig`, I verified this:
 
     ```
     $ sudo sysdig proc.name=a.out
@@ -594,6 +594,12 @@
     314280 22:49:10.888064195 0 a.out (10622) > sigreturn
     ```
 
-    It looks like the call to `write` was uninterruptible; the kernel was
-    able to trigger the execution of the signal handler only after `write`
-    returned.
+    It looks like the call to `write` was uninterruptible; the kernel was able
+    to trigger the execution of the signal handler only after `write` returned.
+
+    On MacOS I see different behavior: the "signal received" message appears
+    about a second after starting the program.  That said, examining the
+    generated file I notice that is is the correct size (1GB).  For MacOS it
+    look like `fwrite` handles the interrupted `write` system call by using the
+    return value (and `errno`) to pick up at the point where the system call was
+    interrupted.
