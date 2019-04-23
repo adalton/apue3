@@ -594,8 +594,11 @@
     314280 22:49:10.888064195 0 a.out (10622) > sigreturn
     ```
 
-    It looks like the call to `write` was uninterruptible; the kernel was able
-    to trigger the execution of the signal handler only after `write` returned.
+    Notice that the `write` to `/tmp/ex12.out` starts at `22:49:00`, finishes
+    at `22:49:10`, and that the signal is delivered immediately after the
+    `write` completes.  It looks like the call to `write` was uninterruptible;
+    the kernel was able to trigger the process to execute the signal handler
+    only after `write` returned.
 
     To verify this, I re-ran the program and used the `ps` command to examine
     its process state:
@@ -605,13 +608,17 @@
     user   1193 66.0 88.0 1052940 889432 pts/1  D+   23:32   0:00 ./a.out
     ```
 
-    According to the man page for `ps`, the `D` process state code means
-    "uninterruptible sleep (usually IO)" (the `+` means the process is in
-    the foreground process group).
+    Notice the `D+` process state.  According to the man page for `ps`, the
+    `D` process state code means "uninterruptible sleep (usually IO)"
+    (the `+` means the process is in the foreground process group).  This
+    explains why the signal was received by the process only after `write`
+    completed.
 
-    On MacOS I see different behavior: the "signal received" message appears
-    about a second after starting the program.  That said, examining the
-    generated file I notice that is is the correct size (1GB).  For MacOS it
-    look like `fwrite` handles the interrupted `write` system call by using the
-    return value (and `errno`) to pick up at the point where the system call was
-    interrupted.
+    On MacOS I see different behavior from this application: the "signal
+    received" message appears about a second after starting the program.  That
+    said, examining the generated file I notice that it is the correct size
+    (1GB).  For MacOS it look like `fwrite` handles the interrupted `write`
+    system call by using the return value (and `errno`) to pick up at the
+    point where the system call was interrupted.  The `fwrite` function isolates
+    the caller from the underlying details of having signals interrupt the
+    system calls.
