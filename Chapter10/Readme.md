@@ -500,7 +500,7 @@
     -rw-r----- 1 user group 1024 Apr 22 21:49 random.out
     ```
 
-    The `read`/`write`/ loop continued for the first 1000 bytes, reading and
+    The `read`/`write` loop continued for the first 1000 bytes, reading and
     writing 100 bytes at a time.  Next, the program successfully read the next
     100 bytes (1000-1100), and tried to write those 100 bytes. It was able to
     write only the first 24 bytes (reaching the file size limit of 1024).
