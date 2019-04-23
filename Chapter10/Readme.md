@@ -597,6 +597,18 @@
     It looks like the call to `write` was uninterruptible; the kernel was able
     to trigger the execution of the signal handler only after `write` returned.
 
+    To verify this, I re-ran the program and used the `ps` command to examine
+    its process state:
+
+    ```
+    $ ps aux | grep a.out
+    user   1193 66.0 88.0 1052940 889432 pts/1  D+   23:32   0:00 ./a.out
+    ```
+
+    According to the man page for `ps`, the `D` process state code means
+    "uninterruptible sleep (usually IO)" (the `+` means the process is in
+    the foreground process group).
+
     On MacOS I see different behavior: the "signal received" message appears
     about a second after starting the program.  That said, examining the
     generated file I notice that is is the correct size (1GB).  For MacOS it
