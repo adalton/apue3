@@ -405,7 +405,7 @@
     signal_intr(int signo, Sigfunc *func)
     {
     	struct sigaction act;
-    	struct sigaction  oact;
+    	struct sigaction oact;
     
     	act.sa_handler = func;
     
@@ -513,3 +513,87 @@
     Before calling `fwrite`, call `alarm` to schedule a signal in 1 second. In
     your signal handler, print that the signal was caught and return. Does the
     call to `fwrite` complete? What’s happening?
+
+    Here's the program:
+
+    ```c
+    #include <signal.h>
+    #include <stdio.h>
+    #include <stdlib.h>
+    #include <unistd.h>
+    
+    static void
+    sig_handler(const int signo)
+    {
+    #define MESSAGE_TEXT "signal received\n"
+    	write(STDERR_FILENO, MESSAGE_TEXT, sizeof(MESSAGE_TEXT) - 1);
+    #undef MESSAGE_TEXT
+    }
+    
+    #define BUFFER_SIZE (1024 * 1024 * 1024)
+    
+    int
+    main(void)
+    {
+    	// Allocate a 1GB buffer
+    	char* const buffer = calloc(sizeof(char), BUFFER_SIZE);
+    	if (buffer == NULL) {
+    		perror("calloc");
+    		return 1;
+    	}
+    
+    	FILE* const file = fopen("/tmp/ex12.out", "w");
+    	if (file == NULL) {
+    		perror("fopen");
+    		free(buffer);
+    		return 1;
+    	}
+    
+    	signal(SIGALRM, sig_handler);
+    	alarm(1);
+    
+    	const size_t written = fwrite(buffer, BUFFER_SIZE, 1, file);
+    	if (written != 1) {
+    		fprintf(stderr, "Failed to write buffer\n");
+    	}
+    
+    	fclose(file);
+    	free(buffer);
+    
+    	return 0;
+    }
+    ```
+
+    Here's a sample run of the program:
+
+    ```
+    $ date ; ./a.out ; date
+    Mon Apr 22 22:41:25 EDT 2019
+    signal received
+    Mon Apr 22 22:41:36 EDT 2019
+    ```
+
+    I notice that the "signal received" message is printed immediately before
+    the program terminates.  Using `sysdig`, I verified this:
+
+    ```
+    $ sudo sysdig proc.name=a.out
+    ...
+    20934 22:49:00.322959018 0 a.out (10622) < openat fd=3(<f>/tmp/ex12.out) dirfd=-100(AT_FDCWD) name=/tmp/ex12.out flags=262(O_TRUNC|O_CREAT|O_WRONLY) mode=0666
+    20943 22:49:00.323339126 0 a.out (10622) > rt_sigaction
+    20944 22:49:00.323341564 0 a.out (10622) < rt_sigaction
+    20945 22:49:00.323367667 0 a.out (10622) > alarm
+    20946 22:49:00.323370819 0 a.out (10622) < alarm
+    20950 22:49:00.323483213 0 a.out (10622) > fstat fd=3(<f>/tmp/ex12.out)
+    20951 22:49:00.323485717 0 a.out (10622) < fstat res=0
+    20952 22:49:00.323491742 0 a.out (10622) > write fd=3(<f>/tmp/ex12.out) size=1073741824
+    313635 22:49:10.883562159 0 a.out (10622) < write res=1073741824 data=...
+    313636 22:49:10.883566887 0 a.out (10622) > signaldeliver spid=0 dpid=10622(a.out) sig=14(SIGALRM)
+    314275 22:49:10.888009194 0 a.out (10622) > write fd=2(<f>/dev/pts/1) size=16
+    314276 22:49:10.888020665 0 a.out (10622) < write res=16 data=signal received.
+    314280 22:49:10.888064195 0 a.out (10622) > sigreturn
+    ```
+
+    It looks like the call to `write` was uninterruptible; the kernel was
+    able to trigger the execution of the signal handler only after `write`
+    returned.

@@ -23,7 +23,7 @@ static Sigfunc*
 signal_intr(int signo, Sigfunc *func)
 {
 	struct sigaction act;
-	struct sigaction  oact;
+	struct sigaction oact;
 
 	act.sa_handler = func;
 
