@@ -342,6 +342,42 @@
     results. How would a program such as the `cron` daemon, which runs every
     minute on the minute, handle this situation?
 
+    Interestingly, I ran this program for almost 24 hours (279 5-minute
+    samples) and the minute value did not change; the program is here
+    and can be found in `exercise_10.c`:
+
+    ```c
+    #include <stdio.h>
+    #include <sys/time.h>
+    #include <time.h>
+    #include <unistd.h>
+    
+    int main(void)
+    {
+    	int i;
+    	for (i = 0;; ++i) {
+    		time_t current_time;
+    
+    		time(&current_time);
+    		const struct tm* const now = gmtime(&current_time);
+    
+    		if (i % 5 == 0) {
+    			printf("%d\n", now->tm_sec);
+    			fflush(stdout);
+    		}
+    
+    		sleep(60);
+    	}
+    }
+    ```
+
+    Given the question, I suspect that the author anticipated that the seconds
+    would drift (increase) over time.  How would something like `cron` deal
+    with drifting?  Since it runs every minute, it could maintain information
+    about the last time it fired and adjust the sleep value accordingly.  If
+    the time drifts by a second, then next time it can sleep for only 59
+    seconds.
+
 11. Modify Figure 3.5 as follows: (a) change `BUFFSIZE` to 100; (b) catch the
     `SIGXFSZ` signal using the `signal_intr` function, printing a message when
     it's caught, and returning from the signal handler; and (c) print the
@@ -352,6 +388,126 @@
     from your shell, call `setrlimit` directly from the program.) Run this
     program on the different systems that you have access to. What happens and
     why?
+
+    Here's the program (also in `exercise_11.c`):
+
+    ```c
+    #include <signal.h>
+    #include <stdio.h>
+    #include <stdlib.h>
+    #include <sys/resource.h>
+    #include <sys/time.h>
+    #include <unistd.h>
+    
+    typedef void (Sigfunc)(int);
+    
+    static Sigfunc*
+    signal_intr(int signo, Sigfunc *func)
+    {
+    	struct sigaction act;
+    	struct sigaction  oact;
+    
+    	act.sa_handler = func;
+    
+    	sigemptyset(&act.sa_mask);
+    	act.sa_flags = 0;
+    
+    #ifdef  SA_INTERRUPT
+    	act.sa_flags |= SA_INTERRUPT;
+    #endif
+    	if (sigaction(signo, &act, &oact) < 0) {
+    		return(SIG_ERR);
+    	}
+    
+    	return(oact.sa_handler);
+    }
+    
+    static void
+    sig_handler(const int signo)
+    {
+    #define MESSAGE_TEXT "signal received\n"
+    	write(STDERR_FILENO, MESSAGE_TEXT, sizeof(MESSAGE_TEXT) - 1);
+    #undef MESSAGE_TEXT
+    }
+    
+    static void
+    set_limit(void)
+    {
+    	struct rlimit limit = {};
+    
+    	if (getrlimit(RLIMIT_FSIZE, &limit) < 0) {
+    		perror("getrlimit");
+    		return;
+    	}
+    
+    	limit.rlim_cur = 1024;
+    
+    	if (setrlimit(RLIMIT_FSIZE, &limit) < 0) {
+    		perror("setrlimit");
+    		return;
+    	}
+    }
+    
+    #define BUFFSIZE 100
+    
+    int
+    main(void)
+    {
+    	int n;
+    	char buf[BUFFSIZE];
+    
+    	set_limit();
+    	signal_intr(SIGXFSZ, sig_handler);
+    
+    	while ((n = read(STDIN_FILENO, buf, BUFFSIZE)) > 0) {
+    		const int bytes_written = write(STDOUT_FILENO, buf, n);
+    		if (bytes_written != n) {
+    			fprintf(stderr,
+    			        "write: expected/received: %d/%d\n",
+    			        n,
+    			        bytes_written);
+    
+    			if (bytes_written < 0) {
+    				perror("write");
+    				exit(1);
+    			}
+    		}
+    	}
+    
+    	if (n < 0) {
+    		perror("read");
+    		exit(1);
+    	}
+    	exit(0);
+    }
+    ```
+
+    Note that setting the limit in the shell didn't have and effect, so
+    instead I implemented to change in the program itself.
+
+    Here's a sample run of the program.  I ran this on Linux 4.19.27 and
+    MacOS Mojave 18.5.0; I got the same results in both cases:
+
+    ```
+    $ dd if=/dev/urandom of=./random bs=1124 count=1
+    $ cat ./random | ./a.out > ./random.out
+    write: expected/received: 100/24
+    signal received
+    write: expected/received: 24/-1
+    write: File too large
+    $ ls -l random random.out
+    -rw-r----- 1 user group 1124 Apr 22 21:48 random
+    -rw-r----- 1 user group 1024 Apr 22 21:49 random.out
+    ```
+
+    The `read`/`write`/ loop continued for the first 1000 bytes, reading and
+    writing 100 bytes at a time.  Next, the program successfully read the next
+    100 bytes (1000-1100), and tried to write those 100 bytes. It was able to
+    write only the first 24 bytes (reaching the file size limit of 1024).
+    Bytes 25-100 (1025-1100) were dropped.  Next, the program read the final
+    24 bytes (1101-1124) from the input file, and tried to write those to the
+    output file.  This call to `write` triggered a `SIGXFSZ` signal.  The
+    `write` system call then returned -1 with `errno` "File too large".
 
 12. Write a program that calls `fwrite` with a large buffer (about one gigabyte).
     Before calling `fwrite`, call `alarm` to schedule a signal in 1 second. In
