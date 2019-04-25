@@ -151,5 +151,12 @@
    3. Unlock the mutex (`pthread_mutex_unlock`).
    4. Signal threads waiting on the condition (`pthread_cond_broadcast`).
  
+   Both are legitimate, but the second sequence is slightly better.  With the
+   first sequence, it's possible for the kernel to try to schedule a thread that
+   was signaled by (iii) before (iv) completes. In that case, the thread calling
+   `pthread_cond_broadcast` still holds the mutex, so the thread that was
+   signaled would again get blocked when trying to acquire the mutex.  The
+   second sequence avoids that releasing the mutex first.
+
 5. What synchronization primitives would you need to implement a barrier?
    Provide an implementation of the `pthread_barrier_wait` function.
