@@ -117,6 +117,21 @@
    associated with a pending job? How would this affect the `job_remove`
    function?
 
+   The current synchronization mechanism --- the r/w lock assocaited with
+   the queue -- protects the queue.  If we want to support multithreaded
+   modification of a job, then we'd need some sort of lock associated with
+   each job.  The `job_find` function would then need to lock that lock
+   before comparing the thread IDs, and unlock the lock afterwards.  The
+   API to change the ID would need to lock the lock, make the modification,
+   and unlock the lock. (Here a "lock" could be a r/w lock, mutex, etc.)
+
+   Note that with this configuration, `find_job` could find a job, return it,
+   and some other thread could then change the thread ID of that job before
+   `job_remove` is called, so clients would need to be able to deal with that.
+   An alternative approach would be to have `find_job` remove the job that it
+   returns, so that it would be impossible to modify the ID of a job that was
+   already in progress.
+
 3. Apply the techniques shown in Figure 11.15 to the worker thread example
    (Figures 11.1 and 11.14) to implement the worker thread function. Don't
    forget to update the `queue_init` function to initialize the condition
