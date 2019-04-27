@@ -396,7 +396,9 @@
 
    One approach is to use a mutex and a condition variable.  The following
    is my implmentation of `pthread_barrier_wait` along with a test application
-   (also in `exercise_5.c`):
+   (also in `exercise_5.c`).  Note the call to `sleep` so that all of the
+   threads do not get created within a short amount of time. As soon at the
+   last threads starts, all of the "running" messages are printed.
 
    ```c
    #include <pthread.h>
