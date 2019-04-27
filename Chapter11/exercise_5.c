@@ -16,26 +16,30 @@ my_barrier_init(struct my_barrier *b, int count)
 	pthread_cond_init(&b->ready_condition, NULL);
 }
 
-void
+int
 my_barrier_wait(struct my_barrier *b)
 {
+	int rc = PTHREAD_BARRIER_SERIAL_THREAD;
 	pthread_mutex_lock(&b->mutex);
 
 	if (--b->count > 0) {
 		pthread_cond_wait(&b->ready_condition, &b->mutex);
+		rc = 0;
 	}
 
 	pthread_mutex_unlock(&b->mutex);
 	pthread_cond_broadcast(&b->ready_condition);
+
+	return rc;
 }
 
 void*
 my_thread(void *arg)
 {
 	struct my_barrier *b = arg;
+	int ret = my_barrier_wait(b);
 
-	my_barrier_wait(b);
-	fprintf(stderr, "\nThread %lu running", pthread_self());
+	fprintf(stderr, "\nret = %d; thread %lu running", ret, pthread_self());
 
 	pthread_exit(NULL);
 }
