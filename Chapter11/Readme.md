@@ -417,26 +417,30 @@
    	pthread_cond_init(&b->ready_condition, NULL);
    }
    
-   void
+   int
    my_barrier_wait(struct my_barrier *b)
    {
+   	int rc = PTHREAD_BARRIER_SERIAL_THREAD;
    	pthread_mutex_lock(&b->mutex);
    
    	if (--b->count > 0) {
    		pthread_cond_wait(&b->ready_condition, &b->mutex);
+   		rc = 0;
    	}
    
    	pthread_mutex_unlock(&b->mutex);
    	pthread_cond_broadcast(&b->ready_condition);
+   
+   	return rc;
    }
    
    void*
    my_thread(void *arg)
    {
    	struct my_barrier *b = arg;
+   	int ret = my_barrier_wait(b);
    
-   	my_barrier_wait(b);
-   	fprintf(stderr, "\nThread %lu running", pthread_self());
+   	fprintf(stderr, "\nret = %d; thread %lu running", ret, pthread_self());
    
    	pthread_exit(NULL);
    }
@@ -465,4 +469,21 @@
    	fprintf(stderr, "\n");
    	pthread_exit(NULL);
    }
+   ```
+
+   Here's a sample run:
+
+   ```
+   $ ./a.out
+   
+   Starting thread 0
+   Starting thread 1
+   Starting thread 2
+   Starting thread 3
+   Starting thread 4
+   ret = 0; thread 139688797914880 running
+   ret = 0; thread 139688789522176 running
+   ret = 0; thread 139688781129472 running
+   ret = 0; thread 139688772736768 running
+   ret = -1; thread 139688764344064 running
    ```
