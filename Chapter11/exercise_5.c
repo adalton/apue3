@@ -16,6 +16,13 @@ my_barrier_init(struct my_barrier *b, int count)
 	pthread_cond_init(&b->ready_condition, NULL);
 }
 
+void
+my_barrier_destroy(struct my_barrier *b)
+{
+	pthread_cond_destroy(&b->ready_condition);
+	pthread_mutex_destroy(&b->mutex);
+}
+
 int
 my_barrier_wait(struct my_barrier *b)
 {
@@ -64,6 +71,8 @@ int main(void)
 	for (i = 0; i < NUM_THREADS; ++i) {
 		pthread_join(threads[i], NULL);
 	}
+
+	my_barrier_destroy(&b);
 
 	fprintf(stderr, "\n");
 	pthread_exit(NULL);
