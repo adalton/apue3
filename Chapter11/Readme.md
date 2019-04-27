@@ -365,6 +365,9 @@
    threads, all `N` will search the queue for work when we add a job
    for one of them.  We could resolve this by having a queue per thread,
    or by not assigning work to specific threads.
+
+   Note that I didn't add the various `destory` function calls; they seemed
+   not contribute to the spirit of this question (and I was lazy).
    
 4. Which sequence of steps is correct?
    1. Lock a mutex (`pthread_mutex_lock`).
