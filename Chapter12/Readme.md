@@ -267,8 +267,9 @@
 
    Additionally, some system calls cannot be used by multithreaded programs.
    For example, the `setns` system call in Linux --- which is used to switch
-   user namespaces --- cannot be called by multithreaded processes for some
-   namespaces.
+   user namespaces --- cannot be called by multithreaded processes to switch
+   to some some namespaces. If a multithreaded process needs to perform some
+   action in a different namespace, it may need to fork first.
 
 6. Reimplement the program in Figure 10.29 to make it thread-safe without using
    `nanosleep` or `clock_nanosleep`.
@@ -276,6 +277,17 @@
 7. After calling `fork`, could we safely reinitialize a condition variable in
    the child process by first destroying the condition variable with
    `pthread_cond_destroy` and then initializing it with `pthread_cond_init`?
+
+   No.  According to the manual for `pthread_cond_destroy`:
+
+   > Attempting to destroy a condition variable upon which other threads are
+   > currently blocked results in undefined behavior.
+
+   When a process forks, it may have had a thread blocked on a condition
+   variable.  Afte the fork, the condition variable is in a state where it
+   think there's a thread blocked on it.  Even though there is no thread
+   in the new process blocked, I suspect calling `pthread_cond_destroy` will
+   still yield undefined behavior.
 
 8. The `timeout` function in Figure 12.8 can be simplified substantially.
    Explain how.
