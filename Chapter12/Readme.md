@@ -154,6 +154,110 @@
 4. Write a program to exercise the version of `getenv` from Figure 12.13.
    Compile and run the program on FreeBSD. What happens? Explain.
 
+   Here's the program (also in `exercise_4.c`):
+
+   ```c
+   #include <limits.h>
+   #include <stdio.h>
+   #include <stdlib.h>
+   #include <string.h>
+   #include <pthread.h>
+   
+   #define MAXSTRINGSZ 4096
+   
+   static pthread_key_t key;
+   static pthread_once_t init_done = PTHREAD_ONCE_INIT;
+   pthread_mutex_t env_mutex = PTHREAD_MUTEX_INITIALIZER;
+   
+   extern char **environ;
+   
+   static void
+   thread_init(void)
+   {
+   	pthread_key_create(&key, free);
+   }
+   
+   char *
+   getenv(const char *name)
+   {
+   	int     i, len;
+   	char    *envbuf;
+   
+   	pthread_once(&init_done, thread_init);
+   	pthread_mutex_lock(&env_mutex);
+   
+   	envbuf = (char *)pthread_getspecific(key);
+   	if (envbuf == NULL) {
+   		envbuf = malloc(MAXSTRINGSZ);
+   		if (envbuf == NULL) {
+   			pthread_mutex_unlock(&env_mutex);
+   			return(NULL);
+   		}
+   		pthread_setspecific(key, envbuf);
+   	}
+   
+   	len = strlen(name);
+   	for (i = 0; environ[i] != NULL; i++) {
+   		if ((strncmp(name, environ[i], len) == 0) &&
+   				(environ[i][len] == '=')) {
+   			strncpy(envbuf, &environ[i][len + 1], MAXSTRINGSZ -1);
+   			pthread_mutex_unlock(&env_mutex);
+   			return(envbuf);
+   		}
+   	}
+   
+   	pthread_mutex_unlock(&env_mutex);
+   
+   	return(NULL);
+   }
+   
+   int main(int argc, char* argv[])
+   {
+   	if (argc < 2) {
+   		fprintf(stderr, "Usage: %s <varname>\n", argv[0]);
+   		return 1;
+   	}
+   
+   	const char* const var = getenv(argv[1]);
+   	printf("%s = %s\n", argv[1], var ? var : "");
+   
+   	return 0;
+   }
+   ```
+
+   On Linux it works as expected.  On FreeBSD the program runs for a few
+   seconds, then crashes.  Running `gdb` on the program I see the following
+   function call sequence:
+
+   ```
+   ... 
+   ... in pthread_timedjoin_np () from /lib/libthr.so.3
+   ... in pthread_once () from /lib/libthr.so.3
+   ... in getenv ()
+   ... in pthread_timedjoin_np () from /lib/libthr.so.3
+   ... in pthread_once () from /lib/libthr.so.3
+   ... in getenv ()
+   ... in pthread_timedjoin_np () from /lib/libthr.so.3
+   ... in pthread_once () from /lib/libthr.so.3
+   ... in getenv ()
+   ... nallocm () from /lib/libc.so.7
+   ... _pthread_cancel_leave () from /lib/libc.so.7
+   ... .init () from /lib/libc.so.7
+   ```
+
+   Here, we haven't even started executing `main` yet; we're still in
+   pre-`main` initialization code.  `.init` calls `_pthread_cancel_leave`,
+   which calls `nallocm`.  `nallocm` calls our implementation of `getenv`
+   looking for the environment variable `MALLOC_CONF`.  Since this is the
+   first call to our `getenv`, it calls `pthread_once`, which calls
+   `pthread_timedjoin_np`.  `pthread_timedjoin_np` then calls `getenv`
+   (recursively) looking for the environment variable `LIBPTHREAD_SPINLOOPS`.
+   Since the first call to `pthread_once` hasn't yet completed, the fact that
+   it has been called hasn't yet been recorded, so our `getenv` calls
+   `pthread_once` again.  The recursive call cycle continues until the program
+   overflows its call stack, at which time it receives a `SIGSEGV` and
+   terminates.
+
 5. Given that you can create multiple threads to perform different tasks within
    a program, explain why you might still need to use `fork`.
 
