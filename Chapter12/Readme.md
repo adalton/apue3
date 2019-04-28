@@ -32,11 +32,11 @@
 
    _Explain the results._
 
-   When writing to the terminal device, the output was flushed when a newline
-   was encountered.  As a result, every call to `printf` was immediately
-   written to the screen.
+   When writing to the terminal device, the output was line-buffered; the
+   buffer was flushed when a newline was encountered.  As a result, every
+   call to `printf` was immediately flushed to the screen.
 
-   When writing to the file, the output was buffered.  At the point where
+   When writing to the file, the output was fully-buffered.  At the point where
    the process `fork`ed, the following output was in the buffer; that buffer
    was copied to the child during the `fork`:
 
@@ -143,6 +143,13 @@
 3. Can you make the `getenv` function shown in Figure 12.13 async-signal safe
    by blocking signals at the beginning of the function and restoring the
    previous signal mask before returning? Explain.
+
+   No. Blocking signals for the duration of `getenv` will protect `getenv`, but
+   the function returns a pointer to thread-local memory.  After `getenv`
+   returns, if a signal fires whose handler also calls `getenv`, then that
+   call will overwrite the value in the buffer.  If the signal handler returns,
+   then the original caller would not have the original value `getenv`
+   requested.
 
 4. Write a program to exercise the version of `getenv` from Figure 12.13.
    Compile and run the program on FreeBSD. What happens? Explain.
