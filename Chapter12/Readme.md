@@ -261,6 +261,15 @@
 5. Given that you can create multiple threads to perform different tasks within
    a program, explain why you might still need to use `fork`.
 
+   Threads run in the same address space, so an error in the code running
+   in one thread can affect another.  With `fork`, the child is a separate
+   process that can't (directly) affect the state of the parent.
+
+   Additionally, some system calls cannot be used by multithreaded programs.
+   For example, the `setns` system call in Linux --- which is used to switch
+   user namespaces --- cannot be called by multithreaded processes for some
+   namespaces.
+
 6. Reimplement the program in Figure 10.29 to make it thread-safe without using
    `nanosleep` or `clock_nanosleep`.
 
