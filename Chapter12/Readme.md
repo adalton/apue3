@@ -320,4 +320,4 @@
 8. The `timeout` function in Figure 12.8 can be simplified substantially.
    Explain how.
 
-   - Skipped -
+   Skipped
