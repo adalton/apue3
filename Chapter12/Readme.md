@@ -34,11 +34,12 @@
 
    When writing to the terminal device, the output was line-buffered; the
    buffer was flushed when a newline was encountered.  As a result, every
-   call to `printf` was immediately flushed to the screen.
+   call to `printf` was immediately flushed to standard output.
 
-   When writing to the file, the output was fully-buffered.  At the point where
-   the process `fork`ed, the following output was in the buffer; that buffer
-   was copied to the child during the `fork`:
+   When standard output is redirected to the file, the output was
+   fully-buffered.  At the point where the process `fork`ed, the following
+   output was in the buffer; that buffer was copied to the child during the
+   `fork`:
 
    ```
    thread started...
@@ -146,10 +147,11 @@
 
    No. Blocking signals for the duration of `getenv` will protect `getenv`, but
    the function returns a pointer to thread-local memory.  After `getenv`
-   returns, if a signal fires whose handler also calls `getenv`, then that
-   call will overwrite the value in the buffer.  If the signal handler returns,
-   then the original caller would not have the original value `getenv`
-   requested.
+   returns, if a signal fires against the thread, and if that signal's handler
+   also calls `getenv`, then the signal handler's call will overwrite the
+   value in the thread-local memory buffer.  If the signal handler returns,
+   when control returns to the original function, the value it requested via
+   `getenv` will have been overwritten.
 
 4. Write a program to exercise the version of `getenv` from Figure 12.13.
    Compile and run the program on FreeBSD. What happens? Explain.
@@ -273,6 +275,32 @@
 
 6. Reimplement the program in Figure 10.29 to make it thread-safe without using
    `nanosleep` or `clock_nanosleep`.
+
+   This implementation will work for Linux, but probably not other flavors
+   of Unix:
+
+   ```c
+   unsigned int
+   sleep(const unsigned int seconds)
+   {
+   	struct timeval timeout = { .tv_sec = seconds };
+
+   	(void) select(0, NULL, NULL, NULL, &timeout);
+
+   	return timeout.tv_sec;
+   }
+   ```
+
+   From the `select` man page:
+
+   > On  Linux, `select()` modifies `timeout` to reflect the amount of time
+   > not slept; most other implementations do not do this.   (POSIX.1  permits
+   > either  behavior.)   This causes problems both when Linux code which
+   > reads timeout is ported to other operating systems, and when code is
+   > ported to Linux that reuses a `struct timeval` for  multiple `select()`s
+   > in a loop without reinitializing it.
+
+   That said, for the sake of this question, I'll stick with it :).
 
 7. After calling `fork`, could we safely reinitialize a condition variable in
    the child process by first destroying the condition variable with
