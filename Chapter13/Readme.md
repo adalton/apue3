@@ -4,6 +4,14 @@
    `/dev/log`, has to be opened. What happens if the user process (the daemon)
    calls `chroot` before calling `openlog`?
 
+   After the call to `chroot`, an open of `/dev/log` will be relative to the
+   new root.  It's possible that `/dev` was bind mounted to the chroot root;
+   if it was, then the call to open the device will be successful.  If not,
+   then the open will fail.
+
+   The program could open the device before calling `chroot`; open file
+   descriptors from outside a chroot are still valid after calling `chroot`.
+
 2. Recall the sample `ps` output from Section 13.2. The only user-level daemon
    that isn't a session leader is the `rsyslogd` process. Explain why the
    `syslogd` daemon isn't a session leader.
