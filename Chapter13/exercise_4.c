@@ -91,8 +91,10 @@ daemonize(const char *cmd)
 	}
 }
 
-int main(void)
+int
+main(const int argc, const char* const argv[])
 {
+	daemonize(argv[0]);
 	FILE* const f = fopen("/tmp/ex4.out", "w");
 	if (f != NULL) {
 		fprintf(f, "%s\n", getlogin());
