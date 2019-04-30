@@ -16,6 +16,10 @@
    that isn't a session leader is the `rsyslogd` process. Explain why the
    `syslogd` daemon isn't a session leader.
 
+   According to
+   [this Stack Exchange Answer](https://unix.stackexchange.com/a/333513/90691),
+   it was a bug in `rsyslogd`.
+
 3. List all the daemons active on your system, and identify the function of
    each one.
 
