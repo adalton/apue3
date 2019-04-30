@@ -23,6 +23,16 @@
 3. List all the daemons active on your system, and identify the function of
    each one.
 
+   ```
+   apache2    -- Web Server
+   udevd      -- Userspace Device Daemon
+   dhcpcd     -- Renew DHCP leases
+   sshd       -- Secure Shell Server
+   crond      -- Cron Daemon
+   dockerd    -- Docker Daemon
+   containerd -- Container Daemon (related to Docker)
+   ```
+
 4. Write a program that calls the `daemonize` function in Figure 13.1. After
    calling this function, call `getlogin` (Section 8.15) to see whether the
    process has a login name now that it has become a daemon. Print the results
