@@ -6,6 +6,36 @@
 2. Take a look at your system’s headers and examine the implementation of
    `select` and the four `FD_` macros.
 
+   ```c
+   /* /usr/include/sys/select.h */
+   extern int select (int __nfds, fd_set *__restrict __readfds,
+                      fd_set *__restrict __writefds,
+                      fd_set *__restrict __exceptfds,
+                      struct timeval *__restrict __timeout);
+
+   #define FD_SET(fd, fdsetp)      __FD_SET (fd, fdsetp)
+   #define FD_CLR(fd, fdsetp)      __FD_CLR (fd, fdsetp)
+   #define FD_ISSET(fd, fdsetp)    __FD_ISSET (fd, fdsetp)
+   #define FD_ZERO(fdsetp)         __FD_ZERO (fdsetp)
+
+   # define __FD_ZERO(fdsp) \
+     do {                                                                        \
+       int __d0, __d1;                                                           \
+       __asm__ __volatile__ ("cld; rep; " __FD_ZERO_STOS                         \
+                             : "=c" (__d0), "=D" (__d1)                          \
+                             : "a" (0), "0" (sizeof (fd_set)                     \
+                                             / sizeof (__fd_mask)),              \
+                               "1" (&__FDS_BITS (fdsp)[0])                       \
+                             : "memory");                                        \
+     } while (0)
+   #define __FD_SET(d, set) \
+     ((void) (__FDS_BITS (set)[__FD_ELT (d)] |= __FD_MASK (d)))
+   #define __FD_CLR(d, set) \
+     ((void) (__FDS_BITS (set)[__FD_ELT (d)] &= ~__FD_MASK (d)))
+   #define __FD_ISSET(d, set) \
+     ((__FDS_BITS (set)[__FD_ELT (d)] & __FD_MASK (d)) != 0)
+   ```
+   
 3. The system headers usually have a built-in limit on the maximum number of
    descriptors that the `fd_set` data type can handle. Assume that we need to
    increase this limit to handle up to 2,048 descriptors. How can we do this?
