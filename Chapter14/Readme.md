@@ -90,6 +90,73 @@
 7. Determine the capacity of a pipe using nonblocking writes. Compare this
    value with the value of `PIPE_BUF` from Chapter 2.
 
+   The following program (also in `exercise_7.c`) will print the size of a
+   pipe buffer:
+
+   ```c
+   #include <fcntl.h>
+   #include <stdio.h>
+   #include <unistd.h>
+   
+   static int
+   make_non_blocking(const int fd)
+   {
+   	const int flags = fcntl(fd, F_GETFL); 
+   	if (flags < 0) {
+   		perror("fcntl");
+   		return -1;
+   	}
+   
+   	return fcntl(fd, F_SETFL, flags | O_NONBLOCK);
+   }
+   
+   int main(void)
+   {
+   	int retval = 1;
+   	int pipe_fds[2] = {};
+   
+   	if (pipe(pipe_fds) < 0) {
+   		perror("pipe");
+   		return 1;
+   	}
+   
+   	// Make the write-end of the pipe non-blocking
+   	if (make_non_blocking(pipe_fds[1]) < 0) {
+   		goto close_pipe;
+   	}
+   
+   
+   	int i;
+   	for (i = 0; write(pipe_fds[1], "a", 1) == 1; ++i);
+   
+   	printf("pipe size: %d\n", i);
+   
+   	retval = 0;
+   
+   close_pipe:
+   	close(pipe_fds[0]);
+   	close(pipe_fds[1]);
+   
+   	return retval;
+   }
+   ```
+
+   A sample run:
+
+   ```
+   $ ./a.out
+   pipe size: 65536
+   ```
+
+   The value larger than `PIPE_BUF`:
+
+   ```
+   /* /usr/include/linux/limits.h */
+   #define PIPE_BUF        4096	/* # bytes in atomic write to a pipe */
+   ```
+
+   So we can write 65536 bytes, but can write only 4096 atomically.
+
 8. Rewrite the program in Figure 14.21 to make it a filter: read from the
    standard input and write to the standard output, but use the asynchronous
    I/O interfaces. What must you change to make it work properly? Keep in mind
