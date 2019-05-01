@@ -155,7 +155,8 @@
    #define PIPE_BUF        4096	/* # bytes in atomic write to a pipe */
    ```
 
-   So we can write 65536 bytes, but can write only 4096 atomically.
+   So we can write 65536 bytes, but can write only 4096 bytes at a time with
+   atomic guarantees.
 
 8. Rewrite the program in Figure 14.21 to make it a filter: read from the
    standard input and write to the standard output, but use the asynchronous
