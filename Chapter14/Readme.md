@@ -14,7 +14,7 @@
                       struct timeval *__restrict __timeout);
 
    typedef struct
-     {
+   {
        /* XPG4.2 requires this member name.  Otherwise avoid the name
           from the global namespace.  */
    #ifdef __USE_XOPEN
@@ -24,7 +24,7 @@
        __fd_mask __fds_bits[__FD_SETSIZE / __NFDBITS];
    # define __FDS_BITS(set) ((set)->__fds_bits)
    #endif
-     } fd_set;
+   } fd_set;
 
    /* /usr/include/bits/select.h */
    #define FD_SET(fd, fdsetp)      __FD_SET (fd, fdsetp)
