@@ -7,11 +7,11 @@
    `select` and the four `FD_` macros.
 
    ```c
+   /* /usr/include/bits/typesizes.h */
+   #define __FD_SETSIZE		1024
+
    /* /usr/include/sys/select.h */
-   extern int select (int __nfds, fd_set *__restrict __readfds,
-                      fd_set *__restrict __writefds,
-                      fd_set *__restrict __exceptfds,
-                      struct timeval *__restrict __timeout);
+   #define __NFDBITS	(8 * (int) sizeof (__fd_mask))
 
    typedef struct
    {
@@ -25,6 +25,11 @@
    # define __FDS_BITS(set) ((set)->__fds_bits)
    #endif
    } fd_set;
+
+   extern int select (int __nfds, fd_set *__restrict __readfds,
+                      fd_set *__restrict __writefds,
+                      fd_set *__restrict __exceptfds,
+                      struct timeval *__restrict __timeout);
 
    /* /usr/include/bits/select.h */
    #define FD_SET(fd, fdsetp)      __FD_SET (fd, fdsetp)
@@ -53,6 +58,22 @@
 3. The system headers usually have a built-in limit on the maximum number of
    descriptors that the `fd_set` data type can handle. Assume that we need to
    increase this limit to handle up to 2,048 descriptors. How can we do this?
+
+   We could change the value of the `__FD_SETSIZE` macro, however,
+   `select` and friends are system calls, so there's a kernel-side to the
+   implementation.  The kernel has the same size limits:
+
+   ```c
+   /* /usr/src/linux/include/uapi/linux/posix_types.h */
+   #undef __FD_SETSIZE
+   #define __FD_SETSIZE    1024
+   
+   typedef struct {
+           unsigned long fds_bits[__FD_SETSIZE / (8 * sizeof(long))];
+   } __kernel_fd_set;
+   ```
+
+   We'd have to change the size there as well and recompile the kernel.
 
 4. Compare the functions provided for signal sets (Section 10.11) and the
    `fd_set` descriptor sets. Also compare the implementation of the two on
