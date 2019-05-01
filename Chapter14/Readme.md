@@ -13,6 +13,7 @@
                       fd_set *__restrict __exceptfds,
                       struct timeval *__restrict __timeout);
 
+   /* /usr/include/bits/select.h */
    #define FD_SET(fd, fdsetp)      __FD_SET (fd, fdsetp)
    #define FD_CLR(fd, fdsetp)      __FD_CLR (fd, fdsetp)
    #define FD_ISSET(fd, fdsetp)    __FD_ISSET (fd, fdsetp)
