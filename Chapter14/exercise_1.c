@@ -5,7 +5,6 @@
    by the processes read locking the file?
 */
 #include <fcntl.h>
-#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <sys/stat.h>
@@ -15,11 +14,11 @@
 #include <unistd.h>
 
 static int
-lock(const int fd, const bool write)
+lock(const int fd, const int lock_type)
 {
 	struct flock fl = {};
 
-	fl.l_type = write ? F_WRLCK : F_RDLCK;
+	fl.l_type = lock_type;
 	fl.l_whence = SEEK_SET;
 	fl.l_start = 0;
 	fl.l_len = 0; /* lock entire file */
@@ -30,18 +29,6 @@ lock(const int fd, const bool write)
 	}
 
 	return 0;
-}
-
-static int
-read_lock(const int fd)
-{
-	return lock(fd, false);
-}
-
-static int
-write_lock(const int fd)
-{
-	return lock(fd, true);
 }
 
 static int
@@ -71,7 +58,7 @@ reader(const char* const filename, const int reader_num, const int sleep_time)
 	}
 
 	fprintf(stderr, "\nreader %d attempting to acquire read lock", reader_num);
-	read_lock(fd);
+	lock(fd, F_RDLCK);
 	fprintf(stderr, "\nreader %d acquired read lock", reader_num);
 
 	sleep(sleep_time);
@@ -99,7 +86,7 @@ writer(const char* const filename, const int sleep_time)
 	}
 
 	fprintf(stderr, "\nwriter attempting to acquire write lock");
-	write_lock(fd);
+	lock(fd, F_WRLCK);
 	fprintf(stderr, "\nwriter acquired write lock");
 
 	sleep(sleep_time);
