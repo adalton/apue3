@@ -312,8 +312,6 @@
    
    Here's the implementation of `sigaddset`:
 
-   Here'
-
    ```c
    int
    sigaddset (sigset_t *set, int signo)
