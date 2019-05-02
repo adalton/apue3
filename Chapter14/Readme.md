@@ -256,6 +256,94 @@
    `fd_set` descriptor sets. Also compare the implementation of the two on
    your system.
 
+   The functions provided for signal sets:
+
+   ```c
+   int sigemptyset(sigset_t *set);
+   int sigfillset(sigset_t *set);
+   int sigaddset(sigset_t *set, int signo);
+   int sigdelset(sigset_t *set, int signo);
+   int sigismember(const sigset_t *set, int signo);
+   ```
+
+   The `fd_set` descriptor sets:
+
+   ```c
+   void FD_CLR(int fd, fd_set *set);
+   int  FD_ISSET(int fd, fd_set *set);
+   void FD_SET(int fd, fd_set *set);
+   void FD_ZERO(fd_set *set);
+   ```
+
+   Here are the similarities:
+   * `sigemptyset` is similar to `FD_ZERO`, both empty the set.
+   * `sigaddset` is similar to `FD_SET`, both add an element to the set.
+   * `sigdelset` is similar to `FD_CLR`, both remove an element from the set.
+   * `sigismember` is similar to `FD_ISSET`, both test to see if an element
+     is in the set.
+
+   There is no `FD_` API that is similar to `sigfillset`.  We often want
+   to perform operations on all signals, but we don't often (ever?) want
+   to do something with all file descriptors, most of which are probably
+   not open.
+
+   The signal set APIs are part of glibc.  Here's the definition of the
+   `sigset_t` type:
+
+   ```c
+   #ifdef __USE_POSIX199309
+   union sigval
+   {
+   	int sival_int;
+   	void *sival_ptr;
+   };
+   
+   typedef union sigval __sigval_t;
+   #else
+   union __sigval
+   {
+   	int __sival_int;
+   	void *__sival_ptr;
+   };
+   
+   typedef union __sigval __sigval_t;
+   #endif
+   ```
+   
+   Here's the implementation of `sigaddset`:
+
+   Here'
+
+   ```c
+   int
+   sigaddset (sigset_t *set, int signo)
+   {
+   	if (set == NULL || signo <= 0 || signo >= NSIG
+   	    || __is_internal_signal (signo))
+   	{
+   		__set_errno (EINVAL);
+   		return -1;
+   	}
+   
+   	__sigaddset (set, signo);
+   	return 0;
+   }
+   ```
+
+   And here's the implementation of `__sigaddset`:
+
+   ```c
+   # define __sigaddset(set, sig)                  \
+     (__extension__ ({                             \
+       __sigset_t __mask = __sigmask (sig);        \
+       *(set) |= __mask;                           \
+       0;                                          \
+     }))
+   ```
+
+   Like the `FD_` macros we looked at earlier, it looks like the fdset API
+   uses a bitmap where each bit represents a signal number.
+
 5. Implement the function `sleep_us`, which is similar to `sleep`, but waits
    for a specified number of microseconds. Use either `select` or `poll`.
    Compare this function to the BSD `usleep` function.
