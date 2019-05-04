@@ -34,8 +34,8 @@
    triggered an `exit_group`, which resuted in the child getting terminated.  I
    base this on `man 2 exit_group`:
 
-   > NOTES
-   >        Since  glibc  2.3,  this is the system call invoked when the
+   > NOTES 
+   >        Since  glibc  2.3,  this is the system call invoked when the 
    >        _exit(2) wrapper function is called.
 
    And that the `exit` function called by `main` will eventually call `_exit`.
