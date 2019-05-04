@@ -511,7 +511,7 @@
     $ sudo mount -oremount,strictatime /
     ```
 
-    With that change it place, the program does update the atime:
+    With that change in place, the program does update the atime:
 
     ```
     $ stat source; ./a.out source dest; stat source
