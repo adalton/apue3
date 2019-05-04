@@ -1,0 +1,81 @@
+1. In the program shown in Figure 15.6, remove the `close` right before the
+   `waitpid` at the end of the parent code. Explain what happens.
+
+2. In the program in Figure 15.6, remove the `waitpid` at the end of the parent
+   code. Explain what happens.
+
+3. What happens if the argument to `popen` is a nonexistent command? Write a
+   small program to test this.
+
+4. In the program shown in Figure 15.18, remove the signal handler, execute the
+   program, and then terminate the child. After entering a line of input, how
+   can you tell that the parent was terminated by `SIGPIPE`?
+
+5. In the program in Figure 15.18, use the standard I/O library for reading
+   and writing the pipes instead of `read` and `write`.
+
+6. The Rationale for POSIX.1 gives as one of the reasons for adding the
+   `waitpid` function that most pre-POSIX.1 systems can't handle the following:
+
+   ```c
+   if ((fp = popen("/bin/true", "r")) == NULL)
+   	...
+   if ((rc = system("sleep 100")) == -1)
+   	...
+   if (pclose(fp) == -1)
+   	...
+   ```
+
+   What happens in this code if `waitpid` isn’t available and `wait` is used
+   instead?
+
+7. Explain how `select` and `poll` handle an input descriptor that is a pipe,
+   when the pipe is closed by the writer. To determine the answer, write two
+   small test programs: one using `select` and one using `poll`.
+
+   Redo this exercise, looking at an output descriptor that is a pipe, when the
+   read end is closed.
+
+8. What happens if the _cmdstring_ executed by `popen` with a _type_ of `"r"`
+   writes to its standard error?
+
+9. Since `popen` invokes a shell to execute its _cmdstring_ argument, what
+   happens when `cmdstring` terminates? (Hint: Draw all the processes involved.)
+
+10. POSIX.1 specifically states that opening a FIFO for read–write is undefined.
+    Although most UNIX systems allow this, show another method for opening a
+    FIFO for both reading and writing, without blocking.
+
+11. Unless a file contains sensitive or confidential data, allowing other users
+    to read the file causes no harm. (It is usually considered antisocial,
+    however, to go snooping around in other people's files.) But what happens
+    if a malicious process reads a message from a message queue that is being
+    used by a server and several clients? What information does the malicious
+    process need to know to read the message queue?
+
+12. Write a program that does the following. Execute a loop five times: create
+    a message queue, print the queue identifier, delete the message queue. Then
+    execute the next loop five times: create a message queue with a key of
+    `IPC_PRIVATE`, and place a message on the queue. After the program
+    terminates, look at the message queues using `ipcs(1)`. Explain what is
+    happening with the queue identifiers.
+
+13. Describe how to build a linked list of data objects in a shared memory
+    segment. What would you store as the list pointers?
+
+14. Draw a timeline of the program in Figure 15.33 showing the value of the
+    variable `i` in both the parent and child, the value of the long integer
+    in the shared memory region, and the value returned by the `update`
+    function.  Assume that the child runs first after the `fork`.
+
+15. Redo the program in Figure 15.33 using the XSI shared memory functions from
+    Section 15.9 instead of the shared memory-mapped region.
+
+16. Redo the program in Figure 15.33 using the XSI semaphore functions from
+    Section 15.8 to alternate between the parent and the child.
+
+17. Redo the program in Figure 15.33 using advisory record locking to alternate
+    between the parent and the child.
+
+18. Redo the program in Figure 15.33 using the POSIX semaphore functions from
+    Section 15.10 to alternate between the parent and the child.
