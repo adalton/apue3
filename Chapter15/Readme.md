@@ -1,6 +1,10 @@
 1. In the program shown in Figure 15.6, remove the `close` right before the
    `waitpid` at the end of the parent code. Explain what happens.
 
+   When the child reaches the end of the document, it blocks on a call to
+   `read` from the pipe. Since the write-end of the pipe isn't closed in the
+   parent, the child will block on the `read` forever.
+
 2. In the program in Figure 15.6, remove the `waitpid` at the end of the parent
    code. Explain what happens.
 
