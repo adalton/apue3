@@ -1,0 +1,8 @@
+#!/bin/bash
+
+while [[ true ]]; do
+    read line
+    x="$(echo "${line}" | awk '{ print $1 }')"
+    y="$(echo "${line}" | awk '{ print $2 }')"
+    echo "$((x + y))"
+done

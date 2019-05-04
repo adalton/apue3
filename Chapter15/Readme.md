@@ -96,6 +96,45 @@
    program, and then terminate the child. After entering a line of input, how
    can you tell that the parent was terminated by `SIGPIPE`?
 
+   See `exercise_4.c`.
+
+   Running the program I see:
+
+   ```
+   $ ./a.out
+   1 1
+   2
+   ```
+
+   Next, I terminate the `add2` process and continue to provide input to the
+   parent process.  The parent terminates immediately:
+
+   ```
+   2 2
+   $
+   ```
+
+   I examine the exit status of the process:
+
+   ```
+   $ echo $?
+   141
+   ```
+
+   My shell is `bash`, and according to `man bash`:
+
+   > The return value of a simple command is its exit status, or 128+n if the
+   > command is terminated by signal n.
+
+   So `141 - 128 = 13`.  What is signal number 13?
+
+   ```
+   $ kill -l
+   ... 13) SIGPIPE ...
+   ```
+
+   This shows that the parent process was terminated by a `SIGPIPE` signal.
+
 5. In the program in Figure 15.18, use the standard I/O library for reading
    and writing the pipes instead of `read` and `write`.
 
