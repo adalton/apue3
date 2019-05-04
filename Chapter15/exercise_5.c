@@ -31,8 +31,23 @@ main(void)
 		close(fd1[0]);
 		close(fd2[1]);
 
+		/* vvv Added for exercise vvv */
+		FILE* in = fdopen(fd2[0], "r");
+		FILE* out = fdopen(fd1[1], "w");
+
+		if (in == NULL) {
+			err_sys("fdopen fd[1]");
+		}
+
+		if (out == NULL) {
+			err_sys("fdopen fd[1]");
+		}
+		/* ^^^ Added for exercise ^^^ */
+
 		/* parent */
 		while (fgets(line, MAXLINE, stdin) != NULL) {
+#if 0
+                        /* vvv Removed for exercise vvv */
 			n = strlen(line);
 			if (write(fd1[1], line, n) != n)
 				err_sys("write error to pipe");
@@ -45,6 +60,18 @@ main(void)
 				break;
 			}
 			line[n] = 0;    /* null terminate */
+                        /* ^^^ Removed for exercise ^^^ */
+#endif
+			/* vvv Added for exercise vvv */
+			fprintf(out, "%s", line);
+			fflush(out);
+
+			if (fgets(line, sizeof(line), in) == NULL) {
+				err_msg("Failed to read from child");
+				break;
+			}
+			/* ^^^ Added for exercise ^^^ */
+
 			if (fputs(line, stdout) == EOF)
 				err_sys("fputs error");
 		}

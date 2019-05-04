@@ -129,14 +129,18 @@
    So `141 - 128 = 13`.  What is signal number 13?
 
    ```
-   $ kill -l
-   ... 13) SIGPIPE ...
+   $ kill -l 13
+   PIPE
    ```
 
    This shows that the parent process was terminated by a `SIGPIPE` signal.
 
 5. In the program in Figure 15.18, use the standard I/O library for reading
    and writing the pipes instead of `read` and `write`.
+
+   See `exercise_5.c`; I used `fdopen` to create `FILE` streams assocaited
+   with the read and write ends of the pipes, and used `fprintf` and `fgets`
+   to write to and read from those streams.
 
 6. The Rationale for POSIX.1 gives as one of the reasons for adding the
    `waitpid` function that most pre-POSIX.1 systems can't handle the following:
