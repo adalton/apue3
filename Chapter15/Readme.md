@@ -35,8 +35,8 @@
    base this on `man 2 exit_group`:
 
    > NOTES  
-   > &nbsp;Since  glibc  2.3,  this is the system call invoked when the  
-   > &nbsp;_exit(2) wrapper function is called.
+   > &nbsp;&nbsp;&nbsp;&nbsp;Since  glibc  2.3,  this is the system call invoked when the  
+   > &nbsp;&nbsp;&nbsp;&nbsp;_exit(2) wrapper function is called.
 
    And that the `exit` function called by `main` will eventually call `_exit`.
 
