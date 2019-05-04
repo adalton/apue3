@@ -35,7 +35,7 @@
    base this on `man 2 exit_group`:
 
    > NOTES  
-   > &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Since  
+   > &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Since
    > glibc  2.3,  this is the system call invoked when the _exit(2) wrapper
    > function is called.
 
