@@ -464,6 +464,75 @@
 10. Run the program in Figure 14.27 to copy a file and determine whether the
     last-access time for the input file is updated.
 
+    No, the last-access time of the input file was not modified.  Note,
+    however, that the filesystem is mounted (by default) with the `relatime`
+    mount option:
+
+    ```
+    $ stat source;./a.out source dest; stat source
+      File: source
+      Size: 1073741824	Blocks: 2097160    IO Block: 4096   regular file
+    Device: 800h/2048d	Inode: 437128      Links: 1
+    Access: (0640/-rw-r-----)  Uid: ( 1000/ user)   Gid: ( 1000/ group)
+    Access: 2019-05-03 20:17:14.759053945 -0400
+    Modify: 2019-05-03 20:04:28.085720632 -0400
+    Change: 2019-05-03 20:04:28.085720632 -0400
+     Birth: -
+      File: source
+      Size: 1073741824	Blocks: 2097160    IO Block: 4096   regular file
+    Device: 800h/2048d	Inode: 437128      Links: 1
+    Access: (0640/-rw-r-----)  Uid: ( 1000/ user)   Gid: ( 1000/ group)
+    Access: 2019-05-03 20:17:14.759053945 -0400
+    Modify: 2019-05-03 20:04:28.085720632 -0400
+    Change: 2019-05-03 20:04:28.085720632 -0400
+     Birth: -
+    ```
+
+    According to `man mount`:
+
+    ```
+    relatime
+           Update inode access times relative to modify or change time.  Access
+           time  is  only  updated if the previous access time was earlier than
+           the current modify or change time.   (Similar  to  noatime,  but  it
+           doesn't break mutt or other applications that need to know if a file
+           has been read since the last time it was modified.)
+
+           Since Linux 2.6.30, the kernel defaults to the behavior provided  by
+           this  option  (unless  noatime  was  specified), and the strictatime
+           option is required to obtain traditional  semantics.   In  addition,
+           since Linux 2.6.30, the file's last access time is always updated if
+           it is more than 1 day old.
+    ```
+
+    If I remount the filesytem with `strictatime`:
+
+    ```
+    $ sudo mount -oremount,strictatime /
+    ```
+
+    With that change it place, the program does update the atime:
+
+    ```
+    $ stat source; ./a.out source dest; stat source
+      File: source
+      Size: 1073741824	Blocks: 2097160    IO Block: 4096   regular file
+    Device: 800h/2048d	Inode: 437128      Links: 1
+    Access: (0640/-rw-r-----)  Uid: ( 1000/ adalton)   Gid: ( 1000/ adalton)
+    Access: 2019-05-03 20:43:16.982387247 -0400
+    Modify: 2019-05-03 20:04:28.085720632 -0400
+    Change: 2019-05-03 20:04:28.085720632 -0400
+     Birth: -
+      File: source
+      Size: 1073741824	Blocks: 2097160    IO Block: 4096   regular file
+    Device: 800h/2048d	Inode: 437128      Links: 1
+    Access: (0640/-rw-r-----)  Uid: ( 1000/ adalton)   Gid: ( 1000/ adalton)
+    Access: 2019-05-03 20:43:35.599053913 -0400
+    Modify: 2019-05-03 20:04:28.085720632 -0400
+    Change: 2019-05-03 20:04:28.085720632 -0400
+     Birth: -
+    ```
+
 11. In the program from Figure 14.27, `close` the input file after calling
     `mmap` to verify that closing the descriptor does not invalidate the
     memory-mapped I/O.
