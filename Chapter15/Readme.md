@@ -34,6 +34,7 @@
    triggered an `exit_group`, which resuted in the child getting terminated.  I
    base this on `man 2 exit_group`:
 
+
    > NOTES  
    > &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Since
    > glibc  2.3,  this is the system call invoked when the _exit(2) wrapper
@@ -56,6 +57,40 @@
 
 3. What happens if the argument to `popen` is a nonexistent command? Write a
    small program to test this.
+
+   Here's the program (see also `exercise_3.c`):
+
+   ```c
+   #include <stdio.h>
+   
+   int
+   main(void)
+   {
+   	FILE* const file = popen("does-not-exist", "r");
+   
+   	if (file == NULL) {
+   		perror("popen");
+   		return 1;
+   	}
+   
+   	pclose(file);
+   
+   	return 0;
+   }
+   ```
+
+   The output of running this program is:
+
+   ```
+   $ ./a.out
+   sh: does-not-exist: command not found
+   ```
+
+   The call to `popen` successfully starts `/bin/sh`, which tries to invoke
+   the non-existant program.  That fails, so `/bin/sh` writes the error
+   message to standard error and terminates.
+
+   Since `open` successfully started the shell, it did not fail.
 
 4. In the program shown in Figure 15.18, remove the signal handler, execute the
    program, and then terminate the child. After entering a line of input, how
