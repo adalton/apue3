@@ -157,6 +157,16 @@
    What happens in this code if `waitpid` isn’t available and `wait` is used
    instead?
 
+   Without `waitpid`, the implementation of `system` would call `wait` to
+   wait for the command to terminate.  If the `popen` failed, then the call
+   to `system` would return almost immediately --- before the command that it
+   executed completes -- and would return the exit status of the `popen`
+   command.
+   
+   Similarly, the `popen` would also call `wait`, and would block waiting for
+   `system`'s child to terminate (if it hadn't already).  It would return the
+   exit status of `system`'s child.
+
 7. Explain how `select` and `poll` handle an input descriptor that is a pipe,
    when the pipe is closed by the writer. To determine the answer, write two
    small test programs: one using `select` and one using `poll`.
