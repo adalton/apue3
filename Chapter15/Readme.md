@@ -8,6 +8,51 @@
 2. In the program in Figure 15.6, remove the `waitpid` at the end of the parent
    code. Explain what happens.
 
+   The parent reads the file and writes the content to the pipe.  Assuming that
+   the size of the file is less than the size of pipe buffer, the parent will
+   write the entire file to the buffer, then terminates immediately.
+
+   The behavior of the child depends on the program.  If, for instance, I do:
+
+   ```
+   PAGER=/bin/cat ./a.out /etc/services
+   ```
+
+   The the content of `/etc/services` fits in the pipe buffer, and `/bin/cat`
+   reads from the pipe and writes everything to standard output (the terminal's
+   character device) before the parent's exit.
+
+   If I instead do:
+
+   ```
+   PAGER=/bin/more ./a.out /etc/services
+   ```
+
+   Then I see only the first page of output.  I think that what's happening
+   is the parent wrote the entire content of the file to the pipe, and the child
+   read the first page and printed it.  Then when the parent terminated, it
+   triggered an `exit_group`, which resuted in the child getting terminated.  I
+   base this on `man 2 exit_group`:
+
+   > NOTES
+   >        Since  glibc  2.3,  this is the system call invoked when the
+   >        _exit(2) wrapper function is called.
+
+   And that the `exit` function called by `main` will eventually call `_exit`.
+
+   Finally, if I do:
+
+   ```
+   PAGER=/usr/bin/less ./a.out /etc/services
+   ```
+
+   Then I don't see any of the output, but I do sometimes see the screen
+   "flash".  My guess is that `less` (1) grabs and saves the content of the
+   terminal display, (2) renders content to standard output, and (3) restores
+   the originally saved display content on exit.  I think the "flash" that
+   I see is what was written to standard output, followed immediately by the
+   on-exit restoration.
+
 3. What happens if the argument to `popen` is a nonexistent command? Write a
    small program to test this.
 
