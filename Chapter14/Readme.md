@@ -380,6 +380,8 @@
    `WAIT_PARENT`, and `WAIT_CHILD` from Figure 10.24 using advisory record
    locking instead of signals? If so, code and test your implementation.
 
+   Skipping.
+
 7. Determine the capacity of a pipe using nonblocking writes. Compare this
    value with the value of `PIPE_BUF` from Chapter 2.
 
@@ -457,9 +459,13 @@
    that you should get the same results whether the standard output is attached
    to a terminal, a pipe, or a regular file.
 
+   Skipping.
+
 9. Recall Figure 14.23. Determine the break-even point on your system where
    using `writev` is faster than copying the data yourself and using a single
    `write`.
+
+   Skipping.
 
 10. Run the program in Figure 14.27 to copy a file and determine whether the
     last-access time for the input file is updated.
