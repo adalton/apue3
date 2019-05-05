@@ -35,7 +35,7 @@
    base this on `man 2 exit_group`:
 
 
-   > NOTES  
+   > NOTES
    > &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;Since
    > glibc  2.3,  this is the system call invoked when the _exit(2) wrapper
    > function is called.
@@ -62,19 +62,19 @@
 
    ```c
    #include <stdio.h>
-   
+
    int
    main(void)
    {
    	FILE* const file = popen("does-not-exist", "r");
-   
+
    	if (file == NULL) {
    		perror("popen");
    		return 1;
    	}
-   
+
    	pclose(file);
-   
+
    	return 0;
    }
    ```
@@ -162,7 +162,7 @@
    to `system` would return almost immediately --- before the command that it
    executed completes -- and would return the exit status of the `popen`
    command.
-   
+
    Similarly, the `popen` would also call `wait`, and would block waiting for
    `system`'s child to terminate (if it hadn't already).  It would return the
    exit status of `system`'s child.
@@ -174,7 +174,7 @@
    Redo this exercise, looking at an output descriptor that is a pipe, when the
    read end is closed.
 
-   1. `select` on read-end  
+   1. `select` on read-end
       If a process is blocked on a call to `select` with the read-end of a
       pipe in the `readfds` set, then when the last process that had the
       write-end open closes that file descriptor, `select` will return the
@@ -190,7 +190,7 @@
       exceptfds set: 0
       ```
 
-   2. `select` on write-end  
+   2. `select` on write-end
       If a process is blocked on a call to `select` with the write-end of a
       pipe in the `writefds` set, then when the last process that had the
       read-end open closes that file descriptor, `select` will return the
@@ -206,7 +206,7 @@
       exceptfds set: 0
       ```
 
-   3. `poll` on read-end  
+   3. `poll` on read-end
       If a process is blocked on a call to `poll` with the read-end of a
       pipe in a `struct pollfd` marked with the `POLLIN` event, then when
       the last process that had the write-end closes the file descriptor,
@@ -221,7 +221,7 @@
       revents: POLLHUP
       ```
 
-   4. `poll` on write-end  
+   4. `poll` on write-end
       If a process calls `poll` with the write-end of a pipe in a
       `struct pollfd` marked with the `POLLOUT` event, if write end of the
       pipe isn't closed and the pipe isn't full (i.e., if data can successfully
@@ -229,7 +229,7 @@
 
       If a process calls `poll` _after_ the write-end of the pipe is closed,
       then `poll` will return immediately with `POLLOUT` and `POLLERR`.
-      
+
       Sample output of `exercise_7d.c`:
 
       ```
@@ -283,7 +283,7 @@
     #include <sys/stat.h>
     #include <sys/wait.h>
     #include <unistd.h>
-    
+
     static int
     rw_fifo(int fifo_fds[2], const char* const fifo)
     {
@@ -293,14 +293,14 @@
     			return -1;
     		}
     	}
-    
+
     	/* Open read-end non-blocking */
     	fifo_fds[0] = open(fifo, O_RDONLY | O_NONBLOCK);
     	if (fifo_fds[0] < 0) {
     		perror("open");
     		return -1;
     	}
-    
+
     	/* Open write-end */
     	fifo_fds[1] = open(fifo, O_WRONLY);
     	if (fifo_fds[1] < 0) {
@@ -308,7 +308,7 @@
     		close(fifo_fds[0]);
     		return -1;
     	}
-    
+
     	/* Get the flags for the read-end */
     	const int flags = fcntl(fifo_fds[0], F_GETFL);
     	if (flags < 0) {
@@ -317,7 +317,7 @@
     		close(fifo_fds[1]);
     		return -1;
     	}
-    
+
     	/* Make the read-end blocking */
     	if (fcntl(fifo_fds[0], F_SETFL, flags & ~O_NONBLOCK) < 0) {
     		perror("fcntl(F_SETFL)");
@@ -325,43 +325,43 @@
     		close(fifo_fds[1]);
     		return -1;
     	}
-    
+
     	return 0;
     }
-    
+
     int
     main(void)
     {
     	const char* const fifo = "/tmp/exercise_15.10.fifo";
     	int fifo_fds[2] = {};
-    
+
     	if (rw_fifo(fifo_fds, fifo) < 0) {
     		return 1;
     	}
-    
+
     	const pid_t pid = fork();
-    
+
     	if (pid < 0) {
     		perror("fork");
     		return 1;
     	}
-    
+
     	if (pid == 0) {                                        /* child */
     		const char msg[] = "Hello, world!";
     		close(fifo_fds[0]);
-    
+
     		write(fifo_fds[1], msg, sizeof(msg) - 1);
     	} else {                                               /* parent */
     		char line[128] = {};
-    
+
     		close(fifo_fds[1]);
-    
+
     		read(fifo_fds[0], line, sizeof(line) - 1);
     		printf("%s\n", line);
-    
+
     		wait(NULL);
     	}
-    
+
     	return 0;
     }
     ```
@@ -373,12 +373,183 @@
     used by a server and several clients? What information does the malicious
     process need to know to read the message queue?
 
+    _What happens if a malicious process reads a message from a message queue
+    that is being used by a server and several clients?_
+
+    If a malicious process reads a message from a message queue, the message
+    is removed from that queue (unless they used the Linux-specific `MSG_COPY`
+    message flag).  Reading the message would prevent the server from receiving
+    and processing the message.  Depending on what messages are being exchanged
+    by the clients and server, the server may or may not be able to detect
+    missing messages.
+
+    _What information does the malicious process need to know to read the
+    message queue?_
+
+    A malicious process would need the ID of the target message queue.
+
 12. Write a program that does the following. Execute a loop five times: create
     a message queue, print the queue identifier, delete the message queue. Then
     execute the next loop five times: create a message queue with a key of
     `IPC_PRIVATE`, and place a message on the queue. After the program
     terminates, look at the message queues using `ipcs(1)`. Explain what is
     happening with the queue identifiers.
+
+    For the first part of the question (also in `exercise_12a.c`):
+
+    ```c
+    #include <stdio.h>
+    #include <sys/ipc.h>
+    #include <sys/msg.h>
+
+    int
+    main(void)
+    {
+    	const int NUM_ITERATIONS = 5;
+    	int i;
+
+    	for (i = 0; i < NUM_ITERATIONS; ++i) {
+    		/* picked /etc/passwd because it exists */
+    		const key_t key = ftok("/etc/passwd", i);
+    		if (key < 0) {
+    			perror("ftok");
+    			return 1;
+    		}
+
+    		const int queue_id = msgget(key, IPC_CREAT | 0666);
+    		/* Create the queue */
+    		if (queue_id < 0) {
+    			perror("msgget");
+    			return 1;
+    		}
+    		printf("queue_id: %d\n", queue_id);
+
+    		/* Delete the queue */
+    		if (msgctl(queue_id, IPC_RMID, NULL) < 0) {
+    			perror("msgctl");
+    			return 1;
+    		}
+    	}
+    	return 0;
+    }
+    ```
+
+    Sample output on Linux (4.19.27):
+
+    ```
+    $ ./a.out
+    queue_id: 917504
+    queue_id: 950272
+    queue_id: 983040
+    queue_id: 1015808
+    queue_id: 1048576
+    ```
+
+	Note that each queue_id 32768 larger than the previous:
+
+    ```
+     917504 + 32768 =  950272
+     950272 + 32768 =  983040
+     983040 + 32768 = 1015808
+    1015808 + 32768 = 1048576
+    1048576
+    ```
+
+    For the second part of the question (also in `exercise_12b.c`):
+
+    ```c
+    #include <stdio.h>
+    #include <sys/ipc.h>
+    #include <sys/msg.h>
+
+    typedef struct {
+    	long mtype;
+    	char mtext[32];
+    } message_t;
+
+    int
+    main(void)
+    {
+    	const int NUM_ITERATIONS = 5;
+    	int i;
+
+    	for (i = 0; i < NUM_ITERATIONS; ++i) {
+    		/* picked /etc/passwd because it exists */
+    		const key_t key = ftok("/etc/passwd", i);
+    		if (key < 0) {
+    			perror("ftok");
+    			return 1;
+    		}
+
+    		const int queue_id = msgget(key,
+    		                            IPC_CREAT | IPC_PRIVATE | 0666);
+    		/* Create the queue */
+    		if (queue_id < 0) {
+    			perror("msgget");
+    			return 1;
+    		}
+
+    		const message_t msg = {
+    			.mtype = 1,
+    			.mtext = "Hello, world!",
+    		};
+
+    		if (msgsnd(queue_id, &msg, sizeof(msg.mtext), 0) < 0) {
+    			perror("msgsnd");
+    			return 1;
+    		}
+    	}
+    	return 0;
+    }
+    ```
+
+    Here's the output of `ipcs` after running the above program:
+
+    ```
+    $ ipcs -q
+
+    ------ Message Queues --------
+    key        msqid      owner      perms      used-bytes   messages
+    0x00000cf3 1081344    user       666        32           1
+    0x01000cf3 1114113    user       666        32           1
+    0x02000cf3 1146882    user       666        32           1
+    0x03000cf3 1179651    user       666        32           1
+    0x04000cf3 1212420    user       666        32           1
+    ```
+
+    Note the the first is 32768 larger than the last one (from the first part
+    of the exercise (1081344 - 1048576 = 32768).  Also note that each subsequent
+    queue ID is 32769 greater than the previous:
+
+    ```
+    1081344 + 32769 = 1114113
+    1114113 + 32769 = 1146882
+    1146882 + 32769 = 1179651
+    1179651 + 32769 = 1212420
+    1212420
+    ```
+
+    Interestingly, if I re-run the program from the first part of this exercise,
+    it re-uses the queue IDs from the second application:
+
+    ```
+    $ ./a.out
+    queue_id: 1081344
+    queue_id: 1114113
+    queue_id: 1146882
+    queue_id: 1179651
+    queue_id: 1212420
+    ```
+
+    And since that program deletes the queues, it cleans up the previously
+    un-deleted queues:
+
+	```
+    $ ipcs -q
+
+    ------ Message Queues --------
+    key        msqid      owner      perms      used-bytes   messages
+	```
 
 13. Describe how to build a linked list of data objects in a shared memory
     segment. What would you store as the list pointers?
