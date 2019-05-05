@@ -250,6 +250,13 @@
 9. Since `popen` invokes a shell to execute its _cmdstring_ argument, what
    happens when `cmdstring` terminates? (Hint: Draw all the processes involved.)
 
+   The process that calls `popen` forks, execs the shell with the given
+   `cmdstring`, and blocks waiting for the shell to terminate.  The shell
+   parses the command line arguments, forks, execs the `cmdstring`, and
+   blocks waiting for the program to terminate.  When `cmdstring` terminates,
+   control returns to the shell.  The shell then exits, returning control
+   to the original process.
+
 10. POSIX.1 specifically states that opening a FIFO for read–write is undefined.
     Although most UNIX systems allow this, show another method for opening a
     FIFO for both reading and writing, without blocking.
