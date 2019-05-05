@@ -241,6 +241,12 @@
 8. What happens if the _cmdstring_ executed by `popen` with a _type_ of `"r"`
    writes to its standard error?
 
+   See `exercise_8.c`.  The `popen` function sets up a pipe and forks to run
+   the given command.  With the `"r"` type, it set the pipe up to redirect the
+   standard output of the given command to the pipe -- it does not modify
+   standard error.  Therefore, the child inherits the standard error file
+   descriptor from the calling process.
+
 9. Since `popen` invokes a shell to execute its _cmdstring_ argument, what
    happens when `cmdstring` terminates? (Hint: Draw all the processes involved.)
 
