@@ -29,6 +29,8 @@ main(void)
 			.events = POLLOUT,
 		};
 
+		sleep(2); /* Let the child close the pipe first */
+
 		const int fdcount = poll(&pfd, 1, /* infinite */ -1);
 		if (fdcount < 0) {
 			perror("poll");
@@ -58,8 +60,6 @@ main(void)
 
 		return 0;
 	} else {            /* child */
-		sleep(2); /* Let parent get blocked on call to select */
-
 		/* These aren't strictly necessary since they'd be closed on exit */
 		close(pipe_fds[0]);
 		close(pipe_fds[1]);

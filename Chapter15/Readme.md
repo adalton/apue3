@@ -221,19 +221,21 @@
       revents: POLLHUP
       ```
 
-   3. `poll` on write-end  
-      If a process is blocked on a call to `poll` with the write-end of a
-      pipe in a `struct pollfd` marked with the `POLLOUT` event, then when
-      the last process that had the read-end closes the file descriptor,
-      `poll` will return with `POLLOUT` set in the `revents` field of the
-      corresponding `struct pollfd`.
+   4. `poll` on write-end  
+      If a process calls `poll` with the write-end of a pipe in a
+      `struct pollfd` marked with the `POLLOUT` event, if write end of the
+      pipe isn't closed and the pipe isn't full (i.e., if data can successfully
+      be written to the pipe), then `poll` returns immediately with `POLLOUT`.
 
+      If a process calls `poll` _after_ the write-end of the pipe is closed,
+      then `poll` will return immediately with `POLLOUT` and `POLLERR`.
+      
       Sample output of `exercise_7d.c`:
 
       ```
       $ ./a.out
       fdcount: 1
-      revents: POLLOUT
+      revents: POLLOUT POLLERR
       ```
 
 8. What happens if the _cmdstring_ executed by `popen` with a _type_ of `"r"`
