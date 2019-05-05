@@ -174,6 +174,68 @@
    Redo this exercise, looking at an output descriptor that is a pipe, when the
    read end is closed.
 
+   1. `select` on read-end
+      If a process is blocked on a call to `select` with the read-end of a
+      pipe in the `readfds` set, then when the last process that had the
+      write-end open closes that file descriptor, `select` will return the
+      read-end in `readfds`.
+
+      Sample output of `exercise_7a.c`:
+
+      ```
+      $ ./a.out
+      fdcount: 1
+      readfds set:   1
+      writefds set:  0
+      exceptfds set: 0
+      ```
+
+   2. `select` on write-end
+      If a process is blocked on a call to `select` with the write-end of a
+      pipe in the `writefds` set, then when the last process that had the
+      read-end open closes that file descriptor, `select` will return the
+      write-end in `writefds`.
+
+      Sample output of `exercise_7b.c`:
+
+      ```
+      $ ./a.out
+      fdcount: 1
+      readfds set:   0
+      writefds set:  1
+      exceptfds set: 0
+      ```
+
+   3. `poll` on read-end
+      If a process is blocked on a call to `poll` with the read-end of a
+      pipe in a `struct pollfd` marked with the `POLLIN` event, then when
+      the last process that had the write-end closes the file descriptor,
+      `poll` will return with `POLLHUP` set in the `revents` field of the
+      corresponding `struct pollfd`.
+
+      Sample output of `exercise_7c.c`:
+
+      ```
+      $ ./a.out
+      fdcount: 1
+      revents: POLLHUP
+      ```
+
+   3. `poll` on write-end
+      If a process is blocked on a call to `poll` with the write-end of a
+      pipe in a `struct pollfd` marked with the `POLLOUT` event, then when
+      the last process that had the read-end closes the file descriptor,
+      `poll` will return with `POLLOUT` set in the `revents` field of the
+      corresponding `struct pollfd`.
+
+      Sample output of `exercise_7d.c`:
+
+      ```
+      $ ./a.out
+      fdcount: 1
+      revents: POLLOUT
+      ```
+
 8. What happens if the _cmdstring_ executed by `popen` with a _type_ of `"r"`
    writes to its standard error?
 
