@@ -174,7 +174,7 @@
    Redo this exercise, looking at an output descriptor that is a pipe, when the
    read end is closed.
 
-   1. `select` on read-end
+   1. `select` on read-end  
       If a process is blocked on a call to `select` with the read-end of a
       pipe in the `readfds` set, then when the last process that had the
       write-end open closes that file descriptor, `select` will return the
@@ -190,7 +190,7 @@
       exceptfds set: 0
       ```
 
-   2. `select` on write-end
+   2. `select` on write-end  
       If a process is blocked on a call to `select` with the write-end of a
       pipe in the `writefds` set, then when the last process that had the
       read-end open closes that file descriptor, `select` will return the
@@ -206,7 +206,7 @@
       exceptfds set: 0
       ```
 
-   3. `poll` on read-end
+   3. `poll` on read-end  
       If a process is blocked on a call to `poll` with the read-end of a
       pipe in a `struct pollfd` marked with the `POLLIN` event, then when
       the last process that had the write-end closes the file descriptor,
@@ -221,7 +221,7 @@
       revents: POLLHUP
       ```
 
-   3. `poll` on write-end
+   3. `poll` on write-end  
       If a process is blocked on a call to `poll` with the write-end of a
       pipe in a `struct pollfd` marked with the `POLLOUT` event, then when
       the last process that had the read-end closes the file descriptor,
