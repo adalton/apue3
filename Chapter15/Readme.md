@@ -554,6 +554,182 @@
 13. Describe how to build a linked list of data objects in a shared memory
     segment. What would you store as the list pointers?
 
+    I would allocate memory for (1) a free list head index, (2) a used list
+    head index, and (3) and array list list nodes.  Each list node would 
+    contain a value and the index of the next node in the list.  On initial
+    creation, I'd initialize the used list head index to -1, the free list
+    head index to 0.  I would then loop over each node in the list, and set
+    the next index to the index of the following node.  Node allocation would
+    get the node whose index is stored in the free list head index.
+
+    Instead of using pointers, everything that would "normally" be a pointer
+    is an index.  This way, when the shared memory segment gets mapped to
+    a different virtual address, everything is an offset instead of an absolute
+    address.
+
+    The following (also in `exercise_13.c`) shows the basic outline:
+
+    ```c
+    #include <stdbool.h>
+    #include <stdio.h>
+    #include <sys/shm.h>
+    #include <sys/ipc.h>
+    
+    typedef struct {
+    	int value;
+    	size_t next;
+    } list_node_t;
+    
+    #define NUM_NODES 128
+    
+    typedef struct {
+    	ssize_t size;
+    	ssize_t capacity;
+    	ssize_t used_list_head;
+    	ssize_t free_list_head;
+    	list_node_t list_nodes[NUM_NODES];
+    } list_t;
+    
+    void
+    list_init(list_t* const list)
+    {
+    	int i;
+    
+    	list->size = 0;
+    	list->capacity = NUM_NODES;
+    	list->used_list_head = -1;
+    	list->free_list_head = 0;
+    
+    	for (i = 0; i < NUM_NODES - 1; ++i) {
+    		list->list_nodes[i].next = i + 1;
+    	}
+    	list->list_nodes[i].next = -1;
+    }
+    
+    bool
+    list_prepend(list_t* const list, const int value)
+    {
+    	if (list->size < list->capacity) {
+    		++list->size;
+    
+    		ssize_t old_free_list_head = list->free_list_head;
+    		list->free_list_head = list->list_nodes[old_free_list_head].next;
+    
+    		list->list_nodes[old_free_list_head].next = list->used_list_head;
+    		list->list_nodes[old_free_list_head].value = value;
+    		list->used_list_head = old_free_list_head;
+    
+    		return true;
+    	}
+    	return false;
+    }
+    
+    void
+    list_print(const list_t* const list)
+    {
+    	printf("List: ");
+    	if (list->used_list_head != -1) {
+    		int next_node = list->used_list_head;
+    
+    		printf("%d", list->list_nodes[next_node].value);
+    
+    		next_node = list->list_nodes[next_node].next;
+    		while (next_node != -1) {
+    			printf(", %d", list->list_nodes[next_node].value);
+    			next_node = list->list_nodes[next_node].next;
+    		}
+    	}
+    	printf("\n");
+    }
+    
+    int
+    main(const int argc, const char* const argv[])
+    {
+    	const bool create = (argc == 1);
+    	int flags = 0600;
+    
+    	/* picked /etc/passwd because it exists; normally I'd use something else */
+    	const key_t key = ftok("/etc/passwd", 0);
+    	if (key < 0) {
+    		perror("ftok");
+    		return 1;
+    	}
+    
+    	if (create) {
+    		flags |= IPC_CREAT;
+    	}
+    
+    	/* Create a shared memory segment */
+    	const int shm_id = shmget(key, sizeof(list_t), flags);
+    	if (shm_id < 0) {
+    		perror("shmget");
+    		return 1;
+    	}
+    
+    	/* Map the shared memory segment into our address space. */
+    	void* const base = shmat(shm_id, NULL, 0);
+    	if (base == NULL) {
+    		perror("shmat");
+    		return 1;
+    	}
+    
+    	list_t* const list = base;
+    
+    	if (create) {
+    		printf("Initializing the memory segment...\n");
+    
+    		/* Initialize the list */
+    		list_init(list);
+    	} else {
+    		/* Add a few elements to the list */
+    		list_prepend(list, 42);
+    		list_prepend(list, 17);
+    		list_prepend(list, -1);
+    		list_prepend(list, 186);
+    	}
+    
+    	list_print(list);
+    
+    	/* Unmap the shared memory segment from our address space. */
+    	if (shmdt(base) < 0) {
+    		perror("shmdt");
+    		return 1;
+    	}
+    
+    	return 0;
+    }
+    ```
+
+    Here's some sample runs of the above program:
+
+    ```
+    $ ./a.out
+    Initializing the memory segment...
+    List:
+    $ ./a.out add
+    List: 186, -1, 17, 42
+    $ ./a.out add
+    List: 186, -1, 17, 42, 186, -1, 17, 42
+    $ ./a.out add
+    List: 186, -1, 17, 42, 186, -1, 17, 42, 186, -1, 17, 42
+    ```
+
+    Here's the shared memory segment:
+
+    ```
+    $ ipcs -m
+    
+    ------ Shared Memory Segments --------
+    key        shmid      owner      perms      bytes      nattch     status
+    0x00000cf3 65536      user       600        2080       0
+    ```
+
+    Finally, I clean up the memory segment:
+
+    ```
+    $ ipcrm -m 65536
+    ```
+
 14. Draw a timeline of the program in Figure 15.33 showing the value of the
     variable `i` in both the parent and child, the value of the long integer
     in the shared memory region, and the value returned by the `update`
