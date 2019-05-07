@@ -754,6 +754,99 @@
 15. Redo the program in Figure 15.33 using the XSI shared memory functions from
     Section 15.9 instead of the shared memory-mapped region.
 
+    Here's the updated program (also in `exercise_15.c`):
+
+    ```c
+    #include <fcntl.h>
+    #include <signal.h>
+    #include <stdio.h>
+    #include <stdlib.h>
+    #include <sys/shm.h>
+    #include <sys/ipc.h>
+    #include <sys/wait.h>
+    #include <unistd.h>
+    
+    #define NLOOPS      1000
+    #define SIZE        sizeof(long)
+    
+    /* TELL/WAIT CHILD/PARENT elided, see exercise_15.c for full program */
+    
+    /* size of shared memory area */
+    static int
+    update(long *ptr)
+    {
+        return((*ptr)++); /* return value before increment */
+    }
+    
+    int
+    main(void)
+    {
+    	int i, counter;
+    	pid_t pid;
+    	void *area;
+    
+    	/* picked /etc/passwd because it exists; normally I'd use something else */
+    	const key_t key = ftok("/etc/passwd", 0);
+    	if (key < 0) {
+    		perror("ftok");
+    		return 1;
+    	}
+    
+    	/* Create a shared memory segment */
+    	const int shm_id = shmget(key, SIZE, IPC_CREAT | 0600);
+    	if (shm_id < 0) {
+    		perror("shmget");
+    		return 1;
+    	}
+    
+    	/* Map the shared memory segment into our address space. */
+    	area = shmat(shm_id, NULL, 0);
+    	if (area == NULL) {
+    		perror("shmat");
+    		return 1;
+    	}
+    
+    	TELL_WAIT();
+    
+    	if ((pid = fork()) < 0) {
+    		err_sys("fork error");
+    	} else if (pid > 0) {           /* parent */
+    		for (i = 0; i < NLOOPS; i += 2) {
+    			if ((counter = update((long *)area)) != i)
+    				err_quit("parent: expected %d, got %d", i, counter);
+    			printf("p: %ld\n", *((long*) area));
+    			TELL_CHILD(pid);
+    			WAIT_CHILD();
+    		}
+    
+    		wait(NULL);
+    	} else {                        /* child */
+    		for (i = 1; i < NLOOPS + 1; i += 2) {
+    			WAIT_PARENT();
+    			if ((counter = update((long *)area)) != i)
+    				err_quit("child: expected %d, got %d", i, counter);
+    			printf("c: %ld\n", *((long*) area));
+    			TELL_PARENT();
+    		}
+    		exit(0); 
+    	}
+    
+    	/* Unmap the shared memory segment from our address space. */
+    	if (shmdt(area) < 0) {
+    		perror("shmdt");
+    		return 1;
+    	}
+    
+    	/* Delete the shared memory segment */
+    	if (shmctl(shm_id, IPC_RMID, NULL) < 0) {
+    		perror("shmctl");
+    		return 1;
+    	}
+    
+    	exit(0); 
+    }
+    ```
+
 16. Redo the program in Figure 15.33 using the XSI semaphore functions from
     Section 15.8 to alternate between the parent and the child.
 
