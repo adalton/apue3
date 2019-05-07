@@ -735,6 +735,22 @@
     in the shared memory region, and the value returned by the `update`
     function.  Assume that the child runs first after the `fork`.
 
+    ```
+    Update always returns the value of i for both the parent and the child.
+
+    +-----------------+-----------------+-----------------+
+    | Parent          | Child           | Shared          |
+    +-----------------+-----------------+-----------------+
+    | i = 0           | -               | 1               |
+    | -               | i = 1           | 2               |
+    | i = 2           | -               | 3               |
+    | -               | i = 3           | 4               |
+    | ...             | ...             | ...             |
+    | i = 998         | -               | 999             |
+    | -               | i = 999         | 1000            |
+    +-----------------+-----------------+-----------------+
+    ```
+
 15. Redo the program in Figure 15.33 using the XSI shared memory functions from
     Section 15.9 instead of the shared memory-mapped region.
 
