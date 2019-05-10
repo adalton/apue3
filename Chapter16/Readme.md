@@ -1,5 +1,27 @@
 1. Write a program to determine your system’s byte ordering.
 
+   ```c
+   #include <stdio.h>
+   #include <stdint.h>
+   
+   int
+   main(void)
+   {
+   	const union {
+   		uint64_t number;
+   		char bytes[8];
+   	} value = {
+   		.number = 1
+   	};
+   
+   
+   	printf("%s Endian\n",
+   	       (value.bytes[0] == 1) ? "Little" : "Big");
+   
+   	return 0;
+   }
+   ```
+
 2. Write a program to print out which stat structure members are supported for
    sockets on at least two different platforms, and describe how the results
    differ.
