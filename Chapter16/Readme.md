@@ -271,6 +271,161 @@
 4. Write a client program and a server program to return the number of processes
    currently running on a specified host computer.
 
+   Server:
+
+   ```c
+   #include <arpa/inet.h>
+   #include <errno.h>
+   #include <stdio.h>
+   #include <stdlib.h>
+   #include <string.h>
+   #include <unistd.h>
+   
+   #define BUFLEN 128
+   #define QLEN    10
+   
+   #define syslog(level, fmt, ...) fprintf(stderr, (fmt "\n"), ##__VA_ARGS__)
+   
+   static int
+   initserver(int type, const struct sockaddr* addr, socklen_t alen, int qlen)
+   {
+   	int err = 0;
+   
+   	const int fd = socket(addr->sa_family, type, 0);
+   	if (fd < 0) {
+   		return -1;
+   	}
+   
+   	if (bind(fd, addr, alen) < 0) {
+   		goto errout;
+   	}
+   
+   	if (type == SOCK_STREAM || type == SOCK_SEQPACKET) {
+   		if (listen(fd, qlen) < 0) {
+   			goto errout;
+   		}
+   	}
+   	return fd;
+   
+   errout:
+   	err = errno;
+   	close(fd);
+   	errno = err;
+   	return -1;
+   }
+   
+   void
+   serv(int sockfd)
+   {
+   	for (;;) {
+   		const int clfd = accept(sockfd, NULL, NULL);
+   		char buf[BUFLEN];
+   
+   		if (clfd < 0) {
+   			syslog(LOG_ERR, "ruptimed: accept error: %s",
+   			       strerror(errno));
+   			exit(1);
+   		}
+   
+   		FILE* fp = popen("ls -d /proc/[0-9]* | wc -l", "r");
+   		if (fp == NULL) {
+   			sprintf(buf, "error: %s\n", strerror(errno));
+   			send(clfd, buf, strlen(buf), 0);
+   		} else {
+   			while (fgets(buf, BUFLEN, fp) != NULL) {
+   				send(clfd, buf, strlen(buf), 0);
+   			}
+   			pclose(fp);
+   		}
+   		close(clfd);
+   	}
+   }
+   
+   int
+   main(void)
+   {
+   	struct sockaddr_in server_sock = {
+   		.sin_family = AF_INET,
+   		.sin_addr.s_addr = htonl(INADDR_ANY),
+   		.sin_port = htons(24482),
+   	};
+   
+   	const int sockfd = initserver(SOCK_STREAM,
+   	                              (struct sockaddr*) &server_sock,
+   	                              sizeof(server_sock),
+   	                              QLEN);
+   	if (sockfd >= 0) {
+   		serv(sockfd);
+   		exit(0);
+   	}
+   
+   	return 0;
+   }
+   ```
+
+   Client:
+
+   ```c
+   #include <arpa/inet.h>
+   #include <netdb.h>
+   #include <stdio.h>
+   #include <stdlib.h>
+   #include <string.h>
+   #include <sys/socket.h>
+   #include <unistd.h>
+   
+   #define BUFLEN 128
+   
+   static void
+   client(const int sockfd)
+   {
+   	char buffer[BUFLEN] = {};;
+   
+   	if (recv(sockfd, buffer, sizeof(buffer) - 1, 0) < 0) {
+   		perror("read");
+   		return;
+   	}
+   
+   	printf("Num procs: %s", buffer);
+   }
+   
+   int
+   main(const int argc, const char* const argv[])
+   {
+   	if (argc < 3) {
+   		fprintf(stderr, "Usage: %s <host> <port>\n", argv[0]);
+   		return 1;
+   	}
+   	const char* const host = argv[1];
+   	const char* const port_str = argv[2];
+   	const int port = strtol(port_str, NULL, 10);
+   
+   	const int sockfd = socket(AF_INET, SOCK_STREAM, 0);
+   	if (sockfd < 0) {
+   		perror("socket");
+   		return 1;
+   	}
+   
+   	struct sockaddr_in servaddr = {
+   		.sin_family = AF_INET,
+   		.sin_addr.s_addr = inet_addr(host),
+   		.sin_port = htons(port),
+   	};
+   
+   	if (connect(sockfd, (struct sockaddr*)&servaddr, sizeof(servaddr)) < 0) {
+   		perror("connect");
+   		close(sockfd);
+   		return 1;
+   	}
+   
+   	client(sockfd);
+   	close(sockfd);
+   
+   	return 0;
+   }
+   ```
+
+
 5. In the program in Figure 16.18, the server waits for the child to execute
    the `uptime` command and exit before accepting the next connect request.
    Redesign the server so that the time to service one request doesn’t delay
