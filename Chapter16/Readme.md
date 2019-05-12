@@ -196,14 +196,14 @@
    		err_quit("usage: %s", argv[0]);
    	}
    
-   	struct sockaddr_in server_sock = {
+   	const struct sockaddr_in server_sock = {
    		.sin_family = AF_INET,
    		.sin_addr.s_addr = htonl(INADDR_ANY),
    		.sin_port = htons(24482),
    	};
    
    	const int sockfd = initserver(SOCK_STREAM,
-   	                              (struct sockaddr*) &server_sock,
+   	                              (const struct sockaddr*) &server_sock,
    	                              sizeof(server_sock),
    	                              QLEN);
    	if (sockfd >= 0) {
@@ -344,14 +344,14 @@
    int
    main(void)
    {
-   	struct sockaddr_in server_sock = {
+   	const struct sockaddr_in server_sock = {
    		.sin_family = AF_INET,
    		.sin_addr.s_addr = htonl(INADDR_ANY),
    		.sin_port = htons(24482),
    	};
    
    	const int sockfd = initserver(SOCK_STREAM,
-   	                              (struct sockaddr*) &server_sock,
+   	                              (const struct sockaddr*) &server_sock,
    	                              sizeof(server_sock),
    	                              QLEN);
    	if (sockfd >= 0) {
@@ -406,13 +406,13 @@
    		return 1;
    	}
    
-   	struct sockaddr_in servaddr = {
+   	const struct sockaddr_in servaddr = {
    		.sin_family = AF_INET,
    		.sin_addr.s_addr = inet_addr(host),
    		.sin_port = htons(port),
    	};
    
-   	if (connect(sockfd, (struct sockaddr*)&servaddr, sizeof(servaddr)) < 0) {
+   	if (connect(sockfd, (const struct sockaddr*)&servaddr, sizeof(servaddr)) < 0) {
    		perror("connect");
    		close(sockfd);
    		return 1;
