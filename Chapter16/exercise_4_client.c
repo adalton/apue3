@@ -38,13 +38,13 @@ main(const int argc, const char* const argv[])
 		return 1;
 	}
 
-	struct sockaddr_in servaddr = {
+	const struct sockaddr_in servaddr = {
 		.sin_family = AF_INET,
 		.sin_addr.s_addr = inet_addr(host),
 		.sin_port = htons(port),
 	};
 
-	if (connect(sockfd, (struct sockaddr*)&servaddr, sizeof(servaddr)) < 0) {
+	if (connect(sockfd, (const struct sockaddr*)&servaddr, sizeof(servaddr)) < 0) {
 		perror("connect");
 		close(sockfd);
 		return 1;

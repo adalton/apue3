@@ -68,14 +68,14 @@ serv(int sockfd)
 int
 main(void)
 {
-	struct sockaddr_in server_sock = {
+	const struct sockaddr_in server_sock = {
 		.sin_family = AF_INET,
 		.sin_addr.s_addr = htonl(INADDR_ANY),
 		.sin_port = htons(24482),
 	};
 
 	const int sockfd = initserver(SOCK_STREAM,
-	                              (struct sockaddr*) &server_sock,
+	                              (const struct sockaddr*) &server_sock,
 	                              sizeof(server_sock),
 	                              QLEN);
 	if (sockfd >= 0) {

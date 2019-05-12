@@ -11,7 +11,6 @@ main(void)
 		.number = 1
 	};
 
-
 	printf("%s Endian\n",
 	       (value.bytes[0] == 1) ? "Little" : "Big");
 
