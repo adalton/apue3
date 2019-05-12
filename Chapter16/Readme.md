@@ -132,6 +132,142 @@
    Modify the program to support service on multiple endpoints (each with a
    different address) at the same time.
 
+   Here's the program (also in `exercise_3.c`):
+   ```c
+   #include <netdb.h>
+   #include <errno.h>
+   #include <fcntl.h>
+   #include <signal.h>
+   #include <stdlib.h>
+   #include <stdio.h>
+   #include <string.h>
+   #include <sys/resource.h>
+   #include <sys/socket.h>
+   #include <sys/stat.h>
+   #include <sys/time.h>
+   #include <sys/types.h>
+   #include <unistd.h>
+   
+   #define err_sys(fmt, ...) fprintf(stderr, (fmt "\n"), ##__VA_ARGS__)
+   #define err_quit(fmt, ...) do { err_sys(fmt, ##__VA_ARGS__); exit(1); } while(0)
+   
+   #define syslog(level, fmt, ...) fprintf(stderr, (fmt "\n"), ##__VA_ARGS__)
+   
+   #define BUFLEN 128
+   #define QLEN 10
+   
+   static int initserver(int, const struct sockaddr*, socklen_t, int);
+   static int set_cloexec(int fd);
+   
+   void
+   serv(int sockfd)
+   {
+   	set_cloexec(sockfd);
+   
+   	for (;;) {
+   		const int clfd = accept(sockfd, NULL, NULL);
+   		char buf[BUFLEN];
+   
+   		if (clfd < 0) {
+   			syslog(LOG_ERR, "ruptimed: accept error: %s",
+   			       strerror(errno));
+   			exit(1);
+   		}
+   		set_cloexec(clfd);
+   
+   		FILE* const fp = popen("/usr/bin/uptime", "r");
+   		if (fp == NULL) {
+   			sprintf(buf, "error: %s\n", strerror(errno));
+   			send(clfd, buf, strlen(buf), 0);
+   		} else {
+   			while (fgets(buf, BUFLEN, fp) != NULL) {
+   				send(clfd, buf, strlen(buf), 0);
+   			}
+   			pclose(fp);
+   		}
+   		close(clfd);
+   	}
+   }
+   
+   int
+   main(int argc, char* argv[])
+   {
+   	if (argc != 1) {
+   		err_quit("usage: %s", argv[0]);
+   	}
+   
+   	struct sockaddr_in server_sock = {
+   		.sin_family = AF_INET,
+   		.sin_addr.s_addr = htonl(INADDR_ANY),
+   		.sin_port = htons(24482),
+   	};
+   
+   	const int sockfd = initserver(SOCK_STREAM,
+   	                              (struct sockaddr*) &server_sock,
+   	                              sizeof(server_sock),
+   	                              QLEN);
+   	if (sockfd >= 0) {
+   		serv(sockfd);
+   		exit(0);
+   	}
+   
+   	exit(0);
+   }
+   
+   static int
+   initserver(int type, const struct sockaddr* addr, socklen_t alen, int qlen)
+   {
+   	int err = 0;
+   
+   	const int fd = socket(addr->sa_family, type, 0);
+   	if (fd < 0) {
+   		return -1;
+   	}
+   
+   	if (bind(fd, addr, alen) < 0) {
+   		goto errout;
+   	}
+   
+   	if (type == SOCK_STREAM || type == SOCK_SEQPACKET) {
+   		if (listen(fd, qlen) < 0) {
+   			goto errout;
+   		}
+   	}
+   	return fd;
+   
+   errout:
+   	err = errno;
+   	close(fd);
+   	errno = err;
+   	return -1;
+   }
+   
+   static int
+   set_cloexec(int fd)
+   {
+   	const int val = fcntl(fd, F_GETFD, 0);
+   	if (val < 0) {
+   		return -1;
+   	}
+   
+   	/* enable close-on-exec */
+   	return fcntl(fd, F_SETFD, val | FD_CLOEXEC);
+   }
+   ```
+
+   I modified Figure 16.17 in a few ways. First, I elected not to `daemonize`
+   the process, not because it ought not be, but for learning/experimenting
+   I didn't want it to be a daemon.  Also, I change it from using
+   `getaddrinfo` to just setting up the socket myself. This enabled me to
+   have a single socket to handle all addresses.  (It also makes it so that
+   I don't need to add an entry to `/etc/services` in order to test.)  Doing
+   this satisifies the "different address" requirement for the exercise.
+   I could have kept the call to `getaddrinfo` and walked the `ailist` and
+   `fork`ed or created a thread to handle each.  Since handling a request
+   is a short-lived operaiton, I didn't parallelize handling the request.
+   If we wanted to, again, I could have `fork`ed or created a thread to handle
+   each.
+
 4. Write a client program and a server program to return the number of processes
    currently running on a specified host computer.
 
