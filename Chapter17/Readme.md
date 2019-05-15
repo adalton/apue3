@@ -256,6 +256,14 @@
 3. In Figures 17.20 and 17.21, we differentiated between declaring and defining
    the global variables. What is the difference?
 
+   _Defining_ a variable allocates storage for the variable.
+   _Declaring_ a variable communicates to the compiler that a symbol with
+   the given name and type exists, but does not allocate storage for it.
+
+   When a variable will be used by more than one compilation unit
+   (source file), it is _defined_ in one file and _declared_ in the others.
+   The location of the _declared_ symbols is resolved at link time.
+
 4. Recode the `buf_args` function (Figure 17.23), removing the compile-time
    limit on the size of the `argv` array. Use dynamic memory allocation.
 
