@@ -104,7 +104,7 @@
    }
    ```
 
-   After running the program, output to the terminal is "wonky".  Using the
+   After running the program, output to the terminal is raw mode.  Using the
    `reset` command puts the terminal back in a sane state.
 
 2. The `PARODD` flag in the `c_cflag` field allows us to specify even or odd
