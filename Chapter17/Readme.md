@@ -129,8 +129,8 @@
 
    _How can we avoid copying the messages two extra times?_
 
-   One option would be to dynamically allocate the message, read message from
-   the queue into the dynamically allocated message, then write the address
+   One option would be to dynamically allocate the message, read the message
+   from the queue into the dynamically allocated message, then write the address
    of the dynamically allocated message to the socket.  The main thread could
    then read that address from the socket (or pipe) and access the message
    without having to copy it.  The main thread would then free the memory
@@ -253,6 +253,8 @@
    also affect the parent’s descriptor. Have the child position the file to a
    different offset and notify the parent again.
 
+   Skipping.
+
 3. In Figures 17.20 and 17.21, we differentiated between declaring and defining
    the global variables. What is the difference?
 
@@ -364,11 +366,60 @@
 5. Describe ways to optimize the function `loop` in Figure 17.29 and
    Figure 17.30.  Implement your optimizations.
 
-6. In the `serv_listen` function (Figure 17.8), we `unlink` the name of the file
-   representing the UNIX domain socket if the file already exists. To avoid
-   unintentionally removing a file that isn’t a socket, we could call `stat`
-   first to verify the file type. Explain the two problems with this approach.
+   Neither figure uses the return value of `select` or `poll`, which indicates
+   the number of file descriptors with activity.  Each could use that value
+   to stop searching once they know they've handled the expected number of
+   file descriptors.
+
+6. In the `serv_listen` function (Figure 17.8), we `unlink` the name of the
+   file representing the UNIX domain socket if the file already exists. To
+   avoid unintentionally removing a file that isn’t a socket, we could call
+   `stat` first to verify the file type. Explain the two problems with this
+   approach.
+
+   1. It's subject to a race condition between the check and unlink.  
+      Consider the following sample code, which implements the logic described
+      in the exercise (also in `exercise_6.c`):
+
+      ```c
+      #include <stdio.h>
+      #include <sys/stat.h>
+      #include <unistd.h>
+      
+      int
+      main(const int argc, const char* const argv[])
+      {
+      	if (argc < 2) {
+      		fprintf(stderr, "Usage: %s <filename>\n", argv[0]);
+      		return 1;
+      	}
+      
+      	const char* const filename = argv[1];
+      	struct stat statbuf = {};
+      
+      	if (stat(filename, &statbuf) < 0) {
+      		perror("stat");
+      		return 1;
+      	}
+      
+      	if (S_ISSOCK(statbuf.st_mode)) {
+      		unlink(filename);
+      	}
+      
+      	return 0;
+      }
+      ```
+
+      It's possible that between the time the program executes `stat` and
+      the time that it executes `unlink` that some other program already
+      `unlink`ed the socket file and replaced it with a file or some other
+      type.  As a result, when this program `unlink`s the file, it unlinks
+      something that is not a socket file.
+
+   2. Skipping
 
 7. Describe two possible ways to pass more than one file descriptor with a
    single call to `sendmsg`. Try them out to see if they are supported by your
    operating system.
+
+   Skipping.
