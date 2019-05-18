@@ -118,3 +118,22 @@
    noncanonical mode). (If you are running a windowing system on your terminal,
    you can do this same test by logging in once and using two separate windows
    instead.)
+
+   Terminal 1:
+   ```
+   $ who am i
+   user  pts/0       2019-05-17 20:32 ...
+
+   $ stty -a
+   ...  min = 1; time = 0; ...
+
+   $ vi
+   ```
+
+   Terminal 2:
+   ```
+   $ stty -a --file /dev/pts/0
+   ... min = 1; time = 0; ...
+   ```
+   Here `vi` is `vim`.  I don't see the values of `MIN` or `TIME` change
+   when running `vi`.
