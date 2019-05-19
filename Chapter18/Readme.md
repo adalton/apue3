@@ -111,6 +111,8 @@
    parity. The BSD `tip` program, however, also allows the parity bit to be 0
    or 1. How does it do this?
 
+   Skipping
+
 3. If your system’s `stty(1)` command outputs the MIN and TIME values, do the
    following exercise. Log in to the system twice and start the `vi` editor
    from one login. Use the `stty` command from your other login to determine
@@ -119,21 +121,69 @@
    you can do this same test by logging in once and using two separate windows
    instead.)
 
-   Terminal 1:
-   ```
-   $ who am i
-   user  pts/0       2019-05-17 20:32 ...
+   1. Linux  
+      Terminal 1:
+      ```
+      $ who am i
+      user  pts/0       2019-05-17 20:32 ...
 
-   $ stty -a
-   ...  min = 1; time = 0; ...
+      $ stty -a
+      ...  min = 1; time = 0; ...
 
-   $ vi
-   ```
+      $ vi
+      ```
 
-   Terminal 2:
-   ```
-   $ stty -a --file /dev/pts/0
-   ... min = 1; time = 0; ...
-   ```
-   Here `vi` is `vim`.  I don't see the values of `MIN` or `TIME` change
-   when running `vi`.
+      Terminal 2:
+      ```
+      $ stty -a --file /dev/pts/0
+      ... min = 1; time = 0; ...
+      ```
+      Here `vi` is `vim`.  With Linux, logged in remotely via ssh, I don't see the
+      values of `MIN` or `TIME` change when running `vi`.
+
+   2. MacOS  
+      Terminal 1:
+      ```
+      $ who am i
+      user  ttys001       May 19 14:03
+
+      $ stty -a
+      ... min = 1; time = 0; ...
+
+      $ vi
+      ```
+
+      Terminal 2:
+      ```
+      $ stty -a < /dev/ttys001
+      ...; min = 1; time = 0; ...
+      ```
+
+      Again, here, `vi` is `vim.  With MacOS, logged into via a terminal
+      application, I don't see the values of `MIN` or `TIME` change when
+      running `vi`.
+
+   3. FreeBSD  
+      Terminal 1:
+      ```
+      $ who am i
+      user   ttyv0        May 19 14:09
+
+      $ stty -a
+      ... min = 1; time = 0; ...
+
+      $ vi
+      ```
+
+      Terminal 2:
+      ```
+      $ stty -a < /dev/ttyv0
+      ... min = 1; time = 0; ...
+      ```
+
+      Again, here, `vi` is `vim.  With FreeBSD, logged into the console, I don't
+      see the values of `MIN` or `TIME` change when running `vi`.
+
+   My best guess here is that either `vim` behaves differently from `vi`
+   (assuming that the author meant `vi` when he wrote `vim`), or that it
+   has chanced since the text was written.
