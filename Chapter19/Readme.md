@@ -35,6 +35,22 @@
    with the ending time. Add these features to the simple shell script that we
    showed.
 
+   Original script:
+   ```sh
+   #!/bin/sh
+   pty "${SHELL:-/bin/sh}" | tee typescript
+   ```
+
+   Modified script:
+   ```sh
+   #!/bin/sh
+   (
+   	echo "Starting on $(date)"
+   	pty "${SHELL:-/bin/sh}"
+   	echo "Ending on $(date)"
+   ) | tee typescript
+   ```
+
 8. Explain why the contents of the file `data` are output to the terminal in
    the following example, even though the program `ttyname` (Figure 18.16)
    only generates output and never reads its input.
