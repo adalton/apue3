@@ -10,12 +10,19 @@
 2. Use the `pty` program to determine the values used by your system to
    initialize a slave PTY’s `termios` structure and `winsize` structure.
 
+   Skipping
+
 3. Recode the `loop` function (Figure 19.12) as a single process using either
    `select` or `poll`.
+
+   Skipping
 
 4. In the child process after `pty_fork` returns, standard input, standard
    output, and standard error are all open for read–write. Can you change
    standard input to be read-only and the other two to be write-only?
+
+   No, there is no function to change the read/write status on an open file
+   descriptor.
 
 5. In Figure 19.13, identify which process groups are in the foreground and
    which are in the background, and identify the session leaders.
