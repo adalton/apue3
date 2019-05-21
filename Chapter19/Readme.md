@@ -2,6 +2,11 @@
    the ownership of the PTY slave and its permissions are set, as we described
    in Section 19.3. How does this happen?
 
+   The login daemons are run as root.  Once a remote user is authenticated,
+   the daemon changes the user and group of the process to that of the user
+   and invokes the user's shell.  While the process is still running as root
+   it can update the ownership and the permissions of the PTY device file.
+
 2. Use the `pty` program to determine the values used by your system to
    initialize a slave PTY’s `termios` structure and `winsize` structure.
 
