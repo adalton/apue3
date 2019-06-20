@@ -382,12 +382,16 @@
    3. Unlock the mutex (`pthread_mutex_unlock`).
    4. Signal threads waiting on the condition (`pthread_cond_broadcast`).
  
-   Both are legitimate, but the second sequence is slightly better.  With the
-   first sequence, it's possible for the kernel to try to schedule a thread that
-   was signaled by (iii) before (iv) completes. In that case, the thread calling
-   `pthread_cond_broadcast` still holds the mutex, so the thread that was
-   signaled would again get blocked when trying to acquire the mutex.  The
-   second sequence avoids that possibility releasing the mutex first.
+   Both are legitimate, but according to the manual the former provides
+   "predictable scheduling behavior":
+
+   > The `pthread_cond_broadcast()` or `pthread_cond_signal()` functions may
+   > be called by a thread whether or not it currently owns the mutex that
+   > threads calling `pthread_cond_wait()` or `pthread_cond_timedwait()` have
+   > associated with the condition variable during their waits; however, if
+   > predictable scheduling behavior is required, then that mutex shall be
+   > locked by the thread calling `pthread_cond_broadcast()` or
+   > `pthread_cond_signal()`.
 
    In either condition, the thread waiting on the condition will need to
    re-evaluate the condition it's waiting for after re-acquiring the lock
