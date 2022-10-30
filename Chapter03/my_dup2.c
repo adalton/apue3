@@ -115,7 +115,7 @@ stack_destroy(Stack* const s)
 static int
 my_dup2(const int oldfd, const int newfd)
 {
-	if (newfd < 0 || newfd < 0) {
+	if (oldfd < 0 || newfd < 0) {
 		errno = EBADF;
 		return -1;
 	}
