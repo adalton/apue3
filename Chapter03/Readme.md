@@ -94,9 +94,10 @@
    `fd1`; the operation applies to the file descriptor and each file descriptor
    has its own file descriptor flags.
 
-   A call to `fcntl` on `fd1` with a command of `F_SETFL` will affect fd1, fd2
-   two file descriptors; the operation applies to the open file table, while fd3 
-   own different open file table
+   A call to `fcntl` on `fd1` with a command of `F_SETFL` will affect both
+   file desciptors `fd1` and `fd2` -- it will not affect `fd3`.  The operation
+   applies to the file table. Descriptors `fd1` and `fd2` share a single file
+   table structure, while `fd3` has a separate file table instance.
 
 4. The following sequence of code has been observed in various programs:
 
