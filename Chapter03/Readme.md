@@ -94,9 +94,9 @@
    `fd1`; the operation applies to the file descriptor and each file descriptor
    has its own file descriptor flags.
 
-   A call to `fcntl` on `fd1` with a command of `F_SETFL` will affect all
-   three file descriptors; the operation applies to the file and all three
-   file descriptors are associated with the same file.
+   A call to `fcntl` on `fd1` with a command of `F_SETFL` will affect fd1, fd2
+   two file descriptors; the operation applies to the open file table, while fd3 
+   own different open file table
 
 4. The following sequence of code has been observed in various programs:
 
