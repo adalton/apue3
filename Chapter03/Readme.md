@@ -99,6 +99,21 @@
    applies to the file table. Descriptors `fd1` and `fd2` share a single file
    table structure, while `fd3` has a separate file table instance.
 
+   See a test implementation in `exercise_3.c`.
+
+   Sample run:
+
+   ```
+   $ ./exercise_3
+   F_GETFD: initial:      fd1: 0, fd2: 0, fd3: 0
+   F_SETFD: Setting FD_CLOEXEC on fd1
+   F_GETFD: after change: fd1: 1, fd2: 0, fd3: 0
+   
+   F_GETFL: initial:      fd1: 8002, fd2: 8002, fd3: 8000
+   F_SETFL: Setting O_APPEND on fd1
+   F_GETFL: after change: fd1: 8402, fd2: 8402, fd3: 8000
+   ```
+
 4. The following sequence of code has been observed in various programs:
 
    ```c
