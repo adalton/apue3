@@ -1,7 +1,8 @@
 #include <stdio.h>
 #include <time.h>
 
-int main(void)
+int
+main(void)
 {
 	time_t max_time = 0;
 	time_t mask = 1;

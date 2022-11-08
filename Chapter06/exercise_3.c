@@ -2,7 +2,8 @@
 #include <stdio.h>
 #include <sys/utsname.h>
 
-int main(void)
+int
+main(void)
 {
 	struct utsname info = {};
 

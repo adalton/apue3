@@ -3,7 +3,8 @@
 
 #define MAX_LINE 256
 
-int main(void)
+int
+main(void)
 {
 	char date_string[MAX_LINE] = {};
 

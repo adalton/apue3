@@ -4,7 +4,8 @@
 
 #define LOG(fmt, ...) printf("[%d] %-4s: " fmt "\n", getpid(), __FUNCTION__, ##__VA_ARGS__)
 
-static int foo()
+static int
+foo()
 {
 	int x = 42;
 	LOG("Entry, before vfork()");
@@ -22,7 +23,8 @@ static int foo()
 	return 0;
 }
 
-static int baz()
+static int
+baz()
 {
 	int y = 69;
 	LOG("Entry");
@@ -33,7 +35,8 @@ static int baz()
 	return 0;
 }
 
-static void bar()
+static void
+bar()
 {
 	LOG("Before foo()");
 	int ret = foo();

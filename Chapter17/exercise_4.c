@@ -72,7 +72,8 @@ print_args(int argc, char* argv[])
 	return 0;
 }
 
-int main(void)
+int
+main(void)
 {
 	char buf[] = "These are the voyages of the starship Enterprise."
 		     "Its continuing mission, to explore strange new worlds";

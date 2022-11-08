@@ -1,7 +1,8 @@
 #include <stdio.h>
 #include <unistd.h>
 
-int main(const int argc, char* const argv[])
+int
+main(const int argc, char* const argv[])
 {
 	if (argc == 1) {
 		execlp(argv[0], argv[0], "myarg1", "MY ARG2", NULL);

@@ -53,7 +53,8 @@ my_thread(void *arg)
 
 #define NUM_THREADS 5
 
-int main(void)
+int
+main(void)
 {
 	struct my_barrier b;
 

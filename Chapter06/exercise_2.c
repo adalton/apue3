@@ -1,7 +1,8 @@
 #include <shadow.h>
 #include <stdio.h>
 
-int main(void)
+int
+main(void)
 {
 	const struct spwd* const entry = getspnam("root");
 

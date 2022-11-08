@@ -14,7 +14,8 @@ make_non_blocking(const int fd)
 	return fcntl(fd, F_SETFL, flags | O_NONBLOCK);
 }
 
-int main(void)
+int
+main(void)
 {
 	int retval = 1;
 	int pipe_fds[2] = {};

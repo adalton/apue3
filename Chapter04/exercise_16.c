@@ -14,13 +14,13 @@ main(const int argc, const char* const argv[])
 	char path[PATH_MAX + 20];
 	int len = strlen("/tmp");
 
-	if(chdir("/tmp") < 0) {
+	if (chdir("/tmp") < 0) {
 		perror("chdir");
 		return 1;
 	}
 
 	while (len < sizeof(path)) {
-		if(mkdir(PATH_ELEMENT, 0755) < 0) {
+		if (mkdir(PATH_ELEMENT, 0755) < 0) {
 			perror("mkdir");
 			return 1;
 		}
@@ -28,7 +28,7 @@ main(const int argc, const char* const argv[])
 			perror("chdir");
 			return 1;
 		}
-		if(getcwd(path, sizeof(path) - 1) < 0) {
+		if (getcwd(path, sizeof(path) - 1) < 0) {
 			perror("getcwd");
 		}
 

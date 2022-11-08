@@ -52,7 +52,8 @@ getenv(const char *name)
 	return(NULL);
 }
 
-int main(int argc, char* argv[])
+int
+main(int argc, char* argv[])
 {
 	if (argc < 2) {
 		fprintf(stderr, "Usage: %s <varname>\n", argv[0]);

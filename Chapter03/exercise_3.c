@@ -18,7 +18,8 @@ typedef struct {
  * Runs the given getCmd against the given three file descriptors and
  * prints the resulting values.
  */
-static void printValues(const char* const label, const TestArgs* const args)
+static void
+printValues(const char* const label, const TestArgs* const args)
 {
 	const int result1 = fcntl(args->fd1, args->getCmd, 0);
 	if (result1 < 0) {
@@ -44,7 +45,8 @@ static void printValues(const char* const label, const TestArgs* const args)
  * against fd1, then runs the given getCmd again and prints the (potentially)
  * updated values.
  */
-static void testFlags(const TestArgs* const args)
+static void
+testFlags(const TestArgs* const args)
 {
 	printValues("initial:     ", args);
 
@@ -56,7 +58,8 @@ static void testFlags(const TestArgs* const args)
 	printValues("after change:", args);
 }
 
-int main(void)
+int
+main(void)
 {
 	const char* const path = "/tmp/exercise3.3_testfile";
 

@@ -7,7 +7,8 @@
 /* This will be on the stack, so don't make it too big. */
 #define BUFFER_SIZE (4096)
 
-static int cp(const char* const source, const char* const dest)
+static int
+cp(const char* const source, const char* const dest)
 {
 	int exit_status = 1;
 	const int source_fd = open(source, O_RDONLY);
@@ -30,8 +31,7 @@ static int cp(const char* const source, const char* const dest)
 	char buffer[BUFFER_SIZE];
 	int bytes_read;
 
-	while((bytes_read = read(source_fd, buffer, sizeof(buffer))) > 0)
-	{
+	while ((bytes_read = read(source_fd, buffer, sizeof(buffer))) > 0) {
 		int bytes_scanned = 0;
 		int bytes_written = 0;
 

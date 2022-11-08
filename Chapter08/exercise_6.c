@@ -4,7 +4,8 @@
 #include <sys/wait.h>
 #include <unistd.h>
 
-int main(void)
+int
+main(void)
 {
 	const pid_t pid = fork();
 	if (pid < 0) {

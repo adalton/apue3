@@ -7,7 +7,8 @@
 
 #define FOUR_GB (1024UL * 1024UL * 1024UL * 4UL)
 
-int main(const int argc, const char* const argv[])
+int
+main(const int argc, const char* const argv[])
 {
 	int exit_status = 1;
 
