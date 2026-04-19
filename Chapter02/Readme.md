@@ -74,6 +74,7 @@
                    }
                } else {
                    err_sys("sysconf error for _SC_OPEN_MAX");
+               }
            }
        }
        return(openmax);
