@@ -11,30 +11,31 @@ main(const int argc, const char *argv[])
 
 	for (i = 1; i < argc; i++) {
 		struct stat buf = {};
-		const char *ptr;
+		const char *ptr = NULL;
 
 		printf("%s: ", argv[i]);
 		if (stat(argv[i], &buf) < 0) {
-			perror("lstat error");
+			perror("stat error");
 			continue;
 		}
 
-		if (S_ISREG(buf.st_mode))
+		if (S_ISREG(buf.st_mode)) {
 			ptr = "regular";
-		else if (S_ISDIR(buf.st_mode))
+        } else if (S_ISDIR(buf.st_mode)) {
 			ptr = "directory";
-		else if (S_ISCHR(buf.st_mode))
+        } else if (S_ISCHR(buf.st_mode)) {
 			ptr = "character special";
-		else if (S_ISBLK(buf.st_mode))
+        } else if (S_ISBLK(buf.st_mode)) {
 			ptr = "block special";
-		else if (S_ISFIFO(buf.st_mode))
+        } else if (S_ISFIFO(buf.st_mode)) {
 			ptr = "fifo";
-		else if (S_ISLNK(buf.st_mode))
+        } else if (S_ISLNK(buf.st_mode)) {
 			ptr = "symbolic link";
-		else if (S_ISSOCK(buf.st_mode))
+        } else if (S_ISSOCK(buf.st_mode)) {
 			ptr = "socket";
-		else
+        } else {
 			ptr = "** unknown mode **";
+        }
 
 		printf("%s\n", ptr);
 	}

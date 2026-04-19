@@ -5,6 +5,28 @@
    link, it reports the type of the file to which the link points instead
    of the type of symbolic link.  See `exercise_1.c`.
 
+
+   Given:
+   ```bash
+   $ ls -ld someDir someLink
+   drwxr-xr-x 3 user group 96 Apr 18 21:26 someDir/
+   lrwxr-xr-x 1 user group  7 Apr 18 21:26 someLink -> someDir/
+   ```
+
+   With `lstat`:
+
+   ```bash
+   $ ./a.out someLink
+   someLink: symbolic link
+   ```
+
+   With `stat`:
+
+   ```bash
+   $ ./a.out someLink
+   someLink: directory
+   ```
+
 2. What happens if the file mode creation mask is set to 777 (octal)? Verify
    the results using your shell’s `umask` command.
 
