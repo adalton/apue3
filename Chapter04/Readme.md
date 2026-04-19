@@ -79,14 +79,41 @@
    symbolic links. Should we ever see a file size of 0 for a directory or a
    symbolic link?
 
-   _Should we ever see a file size of 0 for a directory?_
+   * Should we ever see a file size of 0 for a _directory?_
 
-   No. A directory will always contain `.` and `..`.
+     No. A directory will always contain `.` and `..`.
    
-   _Should we ever see a file size of 0 for a symbolic link?_
+   * Should we ever see a file size of 0 for a _symbolic link?_
 
-   No. A symbolic link will always contain the path of the file to which
-   it references, and that will never be the empty string
+     Generally, no. A symbolic link will always contain the path of the file to
+     which it references.  But can that path be the empty string?
+
+     POSIX doesn't prohibit it.
+
+     > The string pointed to by path1 shall be treated only as a character
+     > string and shall not be validated as a pathname.
+
+     Linux doesn't allow it; if `path1` is the empty string, the `symlink`
+     system call fails with `ENOENT`.
+
+     However, other implementations allow it.  For example, on MacOS:
+
+     ```text
+     $ ln -s '' hi
+     
+     $ ls -l hi
+     lrwxr-xr-x 1 user group 0 Apr 19 11:20 hi -> ''
+     
+     $ stat hi
+       File: hi ->
+       Size: 0         	Blocks: 0          IO Block: 4096   symbolic link
+     Device: 1,16	Inode: 20676380    Links: 1
+     Access: (0755/lrwxr-xr-x)  Uid: (  501/ user)   Gid: (   20/   group)
+     Access: 2026-04-19 11:20:23.880266236 -0400
+     Modify: 2026-04-19 11:20:23.880266236 -0400
+     Change: 2026-04-19 11:20:23.880365860 -0400
+      Birth: 2026-04-19 11:20:23.880266236 -0400
+     ```
 
 6. Write a utility like `cp(1)` that copies a file containing holes, without
    writing the bytes of 0 to the output file.
